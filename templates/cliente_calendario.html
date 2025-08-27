@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendario de {{ nombre }}</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        td, th {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        .ocupado {
+            background: #f88;
+            color: white;
+        }
+        .disponible {
+            background: #8f8;
+        }
+        .bloqueado {
+            background: #ccc;
+            color: #555;
+        }
+        /* Estilo modal */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Calendario de {{ nombre }}</h2>
+
+{% if msg %}
+<div style="background:#ffefc4;padding:10px;border-radius:5px;margin-bottom:15px;">
+    {{ msg }}
+</div>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Hora / Día</th>
+            {% for dia in dias %}
+                <th>{{ dia }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for hora in horas %}
+        <tr>
+            <td>{{ hora }}</td>
+            {% for dia in dias %}
+                {% if (dia, hora) in ocupados %}
+                    <td class="ocupado">Ocupado</td>
+                {% elif (dia, hora) in disponibles %}
+                    <td class="disponible">
+                        <button type="button" class="btn-agendar"
+                            data-peluquero="{{ peluquero_id }}"
+                            data-dia="{{ dia }}"
+                            data-hora="{{ hora }}">
+                            Agendar
+                        </button>
+                    </td>
+                {% elif (dia, hora) in bloqueados %}
+                    <td class="bloqueado">No disponible</td>
+                {% else %}
+                    <td class="bloqueado">No disponible</td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal -->
+<div id="modal">
+    <div id="modal-content">
+        <h3>Agendar cita</h3>
+        <form method="POST" action="{{ url_for('agendar') }}" onsubmit="return validarFormulario()">
+            <input type="hidden" name="peluquero_id" id="peluquero_id">
+            <input type="hidden" name="dia" id="dia">
+            <input type="hidden" name="hora" id="hora">
+
+            <label>Nombre:</label>
+            <input type="text" name="nombre" required><br><br>
+            <label>Teléfono:</label>
+            <input type="text" name="telefono" required><br><br>
+
+            <button type="submit">Confirmar</button>
+            <button type="button" id="cerrar">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function validarFormulario() {
+    const dia = document.getElementById('dia').value;
+    const hora = document.getElementById('hora').value;
+    if (!dia || !hora) {
+        alert("Por favor selecciona un horario antes de agendar.");
+        return false;
+    }
+    return true;
+}
+
+document.querySelectorAll('.btn-agendar').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('peluquero_id').value = this.dataset.peluquero;
+        document.getElementById('dia').value = this.dataset.dia;
+        document.getElementById('hora').value = this.dataset.hora;
+        document.getElementById('modal').style.display = 'flex';
+    });
+});
+
+document.getElementById('cerrar').addEventListener('click', function() {
+    document.getElementById('modal').style.display = 'none';
+});
+</script>
+
+</body>
+</html>

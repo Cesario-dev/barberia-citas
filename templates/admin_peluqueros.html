@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionar Peluqueros</title>
+</head>
+<body>
+<h2>Gestionar Peluqueros</h2>
+<a href="{{ url_for('admin_panel') }}">⬅ Volver al panel</a>
+
+<hr>
+
+<h3>Agregar nuevo peluquero</h3>
+<form action="{{ url_for('agregar_peluquero') }}" method="POST" enctype="multipart/form-data">
+    Nombre: <input type="text" name="nombre" required>
+    Contraseña: <input type="password" name="password" required>
+    Foto: <input type="file" name="foto">
+    Admin: <input type="checkbox" name="es_admin">
+    <button type="submit">Agregar</button>
+</form>
+
+<hr>
+
+<h3>Lista de peluqueros</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+    </tr>
+    {% for id, nombre, es_admin, foto in peluqueros %}
+    <tr>
+        <td>
+            {% if foto %}
+                <img src="{{ url_for('static', filename='img_peluqueros/' + foto) }}" width="60">
+            {% else %}
+                Sin foto
+            {% endif %}
+        </td>
+        <td>{{ nombre }}</td>
+        <td>{{ "Admin" if es_admin else "Peluquero" }}</td>
+        <td>
+            <form action="{{ url_for('editar_peluquero', id=id) }}" method="POST" enctype="multipart/form-data" style="display:inline-block;">
+                <input type="text" name="nombre" value="{{ nombre }}" required>
+                <input type="password" name="password" placeholder="Nueva contraseña (opcional)">
+                <input type="file" name="foto">
+                Admin: <input type="checkbox" name="es_admin" {% if es_admin %}checked{% endif %}>
+                <button type="submit">Guardar</button>
+            </form>
+            <a href="{{ url_for('eliminar_peluquero', id=id) }}" onclick="return confirm('¿Seguro que quieres eliminar este peluquero?')">❌ Eliminar</a>
+            <a href="{{ url_for('ver_calendario_admin', peluquero_id=id) }}">📅 Ver calendario</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

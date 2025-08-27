@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citas agendadas - {{ nombre }}</title>
+</head>
+<body>
+    <h1>Citas agendadas de {{ nombre }}</h1>
+
+    {% if citas %}
+        <table border="1" cellpadding="8" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Teléfono</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for id, dia, hora, cliente, telefono in citas %}
+                    <tr>
+                        <td>{{ dia.capitalize() }}</td>
+                        <td>{{ hora }}</td>
+                        <td>{{ cliente }}</td>
+                        <td>{{ telefono }}</td>
+                        <td>
+                            <a href="/admin/{{ peluquero_id }}/citas?cancelar={{ id }}" onclick="return confirm('¿Cancelar esta cita?');">❌ Cancelar</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay citas agendadas.</p>
+    {% endif %}
+
+    <p><a href="/admin/{{ peluquero_id }}">← Volver al panel</a></p>
+</body>
+</html>

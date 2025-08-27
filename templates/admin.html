@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Horarios - {{ nombre }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        form {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        label, select, input, button {
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        details {
+            margin: 10px 0;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 4px #ccc;
+        }
+
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        ul {
+            padding-left: 15px;
+        }
+
+        @media (max-width: 600px) {
+            label, select, input, button {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Horarios de {{ nombre }}</h1>
+
+    {% if session.get('es_admin') %}
+        <a href="{{ url_for('admin_peluqueros') }}" 
+        style="display:inline-block;margin:10px 0;padding:8px 12px;background:#28a745;color:white;text-decoration:none;border-radius:5px;">
+        👥 Gestionar agendas de barberos
+        </a>
+    {% endif %}
+
+    <p style="text-align:center;">
+        <a href="/admin/{{ peluquero_id }}/citas">📋 Ver citas agendadas</a> |
+        <a href="/admin/{{ peluquero_id }}/calendario">📆 Ver calendario semanal</a> |
+        <a href="/logout">Cerrar sesión</a>
+    </p>
+
+    <h2>Agregar nuevo horario</h2>
+    <form method="POST">
+        <label for="dia">Día:</label>
+        <select name="dia" required>
+            <option value="lunes">Lunes</option>
+            <option value="martes">Martes</option>
+            <option value="miercoles">Miércoles</option>
+            <option value="jueves">Jueves</option>
+            <option value="viernes">Viernes</option>
+        </select>
+
+        <label for="hora">Hora:</label>
+        <input type="time" name="hora" required>
+
+        <button type="submit">Agregar</button>
+    </form>
+
+    <h2>Horarios actuales</h2>
+
+    {% set dias_ordenados = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'] %}
+
+    {% for dia in dias_ordenados %}
+        <details>
+            <summary>{{ dia.capitalize() }}</summary>
+            <ul>
+                {% for id, dia_h, hora in horarios %}
+                    {% if dia_h == dia %}
+                        <li>{{ hora }} <a href="/admin/{{ peluquero_id }}?eliminar={{ id }}">Eliminar</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </details>
+    {% endfor %}
+</body>
+</html>

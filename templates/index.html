@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda tu cita</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header img {
+            margin-top: 20px;
+            max-width: 360px;
+        }
+
+        h2 {
+            margin-top: 10px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .barra-lateral {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 100px;
+            background-size: contain; /* Ajusta imagen sin distorsión */
+            background-repeat: repeat-y;
+            background-position: center;
+            z-index: 999;
+        }
+
+        .barra-izquierda {
+            left: 0;
+            background-image: url("{{ url_for('static', filename='lateral.png') }}");
+        }
+
+        .barra-derecha {
+            right: 0;
+            background-image: url("{{ url_for('static', filename='lateral.png') }}");
+        }
+
+        main {
+            max-width: 700px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 1em;
+        }
+
+        footer a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .peluquero {
+            display: inline-block;
+            margin: 20px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .peluquero img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #e6b800;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="barra-lateral barra-izquierda"></div>
+    <div class="barra-lateral barra-derecha"></div>
+
+    <header>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo barbería">
+        <h2>Agenda tu cita</h2>
+    </header>
+
+    <main>
+        {% for id, nombre, foto in peluqueros %}
+            <div class="peluquero">
+                <img src="{{ foto }}" alt="{{ nombre }}">
+                <p>{{ nombre }}</p>
+                <a href="{{ url_for('calendario_cliente', peluquero_id=id) }}">
+                    <button>Agendar</button>
+                </a>
+            </div>
+        {% endfor %}
+    </main>
+
+    <footer>
+        <p>Síguenos en:</p>
+        <a href="https://www.facebook.com/share/1F3eTReS3t/?mibextid=wwXIfr" target="_blank">Facebook</a>
+        <a href="https://www.instagram.com/vip_barbertop?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank">Instagram</a>
+        <a href="https://www.tiktok.com/@vip_barbertop?_r=1&_d=e2gac3bl8ij6a3&sec_uid=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&share_author_id=7226022425540215813&sharer_language=es&source=h5_m&u_code=e7gkkik21ge9jl&ug_btm=b8727,b0&social_share_type=4&utm_source=copy&sec_user_id=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&tt_from=copy&utm_medium=ios&utm_campaign=client_share&enable_checksum=1&user_id=7226022425540215813&share_link_id=3CC01BDB-2770-4A0E-9626-A8DE3C55F97F&share_app_id=1233" target="_blank">TikTok</a>
+    </footer>
+
+</body>
+</html>
