@@ -72,6 +72,10 @@ def init_schema():
     conn.commit()
     conn.close()
 
+with app.app_context():
+    init_schema()
+    init_db_legacy()
+
 # ---------- FUNCIONES ----------
 def cargar_horarios_40_minutos(peluquero_id):
     if not peluquero_id:
