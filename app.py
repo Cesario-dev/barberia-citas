@@ -36,7 +36,7 @@ def init_schema():
     c = conn.cursor()
     c.execute("""
         CREATE TABLE IF NOT EXISTS peluqueros (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             nombre TEXT NOT NULL,
             usuario TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
