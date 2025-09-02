@@ -85,12 +85,12 @@ def cargar_horarios_40_minutos(peluquero_id):
             while actual <= fin:
                 hora = actual.strftime("%H:%M")
                 c.execute(adapt_query(
-                    "SELECT 1 FROM horarios WHERE peluquero_id=? AND dia=? AND hora=?"
+                    "SELECT 1 FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s"
                 ), (peluquero_id, dia, hora))
                 existe = c.fetchone()
                 if not existe:
                     c.execute(adapt_query(
-                        "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (?, ?, ?)"
+                        "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)"
                     ), (peluquero_id, dia, hora))
                 actual += timedelta(minutes=40)
 
@@ -108,16 +108,16 @@ def init_db_legacy():
     if c.fetchone()[0] == 0:
         # Admin
         c.execute(adapt_query(
-            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
         ), ("Admin", "admin", generate_password_hash("admin123"), "/static/logo.png", 1))
 
         # Barberos de prueba
         c.execute(adapt_query(
-            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
         ), ("Carlos", "carlos", generate_password_hash("1234"), "/static/carlos.png", 0))
 
         c.execute(adapt_query(
-            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
         ), ("Luis", "luis", generate_password_hash("1234"), "/static/luis.png", 0))
 
         conn.commit()
@@ -163,7 +163,7 @@ def agendar():
     c = conn.cursor()
 
     # Verificar que sigue disponible
-    c.execute("SELECT COUNT(*) FROM citas WHERE peluquero_id=? AND dia=? AND hora=?", 
+    c.execute("SELECT COUNT(*) FROM citas WHERE peluquero_id=%s AND dia=%s AND hora=%s", 
               (peluquero_id, dia, hora))
     if c.fetchone()[0] > 0:
         conn.close()
@@ -171,7 +171,7 @@ def agendar():
 
     # Guardar la cita
     c.execute(
-        "INSERT INTO citas (peluquero_id, dia, hora, nombre, telefono) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO citas (peluquero_id, dia, hora, nombre, telefono) VALUES (%s, %s, %s, %s, %s)",
         (peluquero_id, dia, hora, nombre, telefono)
     )
     conn.commit()
@@ -193,7 +193,7 @@ def login():
         c = conn.cursor()
         # Busca por usuario o por nombre (como venías usando)
         c.execute(
-            adapt_query("SELECT id, nombre, usuario, password, es_admin FROM peluqueros WHERE usuario=? OR nombre=?"),
+            adapt_query("SELECT id, nombre, usuario, password, es_admin FROM peluqueros WHERE usuario=%s OR nombre=%s"),
             (usuario, usuario)
         )
         row = c.fetchone()
@@ -258,11 +258,11 @@ def calendario_cliente(peluquero_id):
         hora_actual += timedelta(minutes=40)
 
     # Horarios disponibles
-    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=?", (peluquero_id,))
+    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=%s", (peluquero_id,))
     disponibles = set((row[0], row[1]) for row in c.fetchall())
 
     # Citas ocupadas
-    c.execute("SELECT dia, hora, nombre FROM citas WHERE peluquero_id=?", (peluquero_id,))
+    c.execute("SELECT dia, hora, nombre FROM citas WHERE peluquero_id=%s", (peluquero_id,))
     ocupados = {(row[0], row[1]): row[2] for row in c.fetchall()}
 
     conn.close()
@@ -310,7 +310,7 @@ def admin_peluqueros():
             password = request.form["password"]
             foto = request.form["foto"]
             c.execute(adapt_query(
-                "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
             ), (nombre, usuario, password, foto, 0))
 
         # ✏️ Editar peluquero
@@ -320,7 +320,7 @@ def admin_peluqueros():
             usuario = request.form["usuario"]
             foto = request.form["foto"]
             c.execute(adapt_query(
-                "UPDATE peluqueros SET nombre=?, usuario=?, foto=? WHERE id=?"
+                "UPDATE peluqueros SET nombre=%s, usuario=%s, foto=%s WHERE id=%s"
             ), (nombre, usuario, foto, peluquero_id))
 
         # 🔑 Cambiar contraseña
@@ -328,13 +328,13 @@ def admin_peluqueros():
             peluquero_id = request.form["id"]
             password = request.form["password"]
             c.execute(adapt_query(
-                "UPDATE peluqueros SET password=? WHERE id=?"
+                "UPDATE peluqueros SET password=%s WHERE id=%s"
             ), (password, peluquero_id))
 
         # 🗑️ Eliminar peluquero
         elif accion == "eliminar":
             peluquero_id = request.form["id"]
-            c.execute(adapt_query("DELETE FROM peluqueros WHERE id=?"), (peluquero_id,))
+            c.execute(adapt_query("DELETE FROM peluqueros WHERE id=%s"), (peluquero_id,))
 
         conn.commit()
 
@@ -364,7 +364,7 @@ def agregar_peluquero():
 
     conn = get_conn()
     c = conn.cursor()
-    c.execute("INSERT INTO peluqueros (nombre, password, es_admin, foto) VALUES (?, ?, ?, ?)",
+    c.execute("INSERT INTO peluqueros (nombre, password, es_admin, foto) VALUES (%s, %s, %s, %s)",
               (nombre, password, es_admin, foto))
     conn.commit()
     conn.close()
@@ -393,10 +393,10 @@ def editar_peluquero(id):
     c = conn.cursor()
 
     if password:  # si cambia contraseña
-        c.execute("UPDATE peluqueros SET nombre=?, password=?, es_admin=?, foto=? WHERE id=?",
+        c.execute("UPDATE peluqueros SET nombre=%s, password=%s, es_admin=%s, foto=%s WHERE id=%s",
                   (nombre, password, es_admin, foto, id))
     else:  # sin cambio de contraseña
-        c.execute("UPDATE peluqueros SET nombre=?, es_admin=?, foto=? WHERE id=?",
+        c.execute("UPDATE peluqueros SET nombre=%s, es_admin=%s, foto=%s WHERE id=%s",
                   (nombre, es_admin, foto, id))
 
     conn.commit()
@@ -413,7 +413,7 @@ def eliminar_peluquero(id):
 
     conn = get_conn()
     c = conn.cursor()
-    c.execute("DELETE FROM peluqueros WHERE id=?", (id,))
+    c.execute("DELETE FROM peluqueros WHERE id=%s", (id,))
     conn.commit()
     conn.close()
 
@@ -433,7 +433,7 @@ def ver_calendario_admin(peluquero_id):
     cancelar_dia = request.args.get('cancelar_dia')
     cancelar_hora = request.args.get('cancelar_hora')
     if cancelar_dia and cancelar_hora:
-        c.execute("DELETE FROM citas WHERE peluquero_id=? AND dia=? AND hora=?",
+        c.execute("DELETE FROM citas WHERE peluquero_id=%s AND dia=%s AND hora=%s",
                   (peluquero_id, cancelar_dia, cancelar_hora))
         conn.commit()
 
@@ -441,7 +441,7 @@ def ver_calendario_admin(peluquero_id):
     bloquear_dia = request.args.get('bloquear_dia')
     bloquear_hora = request.args.get('bloquear_hora')
     if bloquear_dia and bloquear_hora:
-        c.execute("DELETE FROM horarios WHERE peluquero_id=? AND dia=? AND hora=?",
+        c.execute("DELETE FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s",
                   (peluquero_id, bloquear_dia, bloquear_hora))
         conn.commit()
 
@@ -450,14 +450,14 @@ def ver_calendario_admin(peluquero_id):
     reactivar_hora = request.args.get('reactivar_hora')
     if reactivar_dia and reactivar_hora:
         try:
-            c.execute("INSERT INTO horarios (peluquero_id, dia, hora) VALUES (?, ?, ?)",
+            c.execute("INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
                       (peluquero_id, reactivar_dia, reactivar_hora))
             conn.commit()
         except:
             pass  # si ya existe, ignorar
 
     # Datos del peluquero
-    c.execute("SELECT nombre FROM peluqueros WHERE id=?", (peluquero_id,))
+    c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
     peluquero = c.fetchone()
     if not peluquero:
         conn.close()
@@ -476,11 +476,11 @@ def ver_calendario_admin(peluquero_id):
         hora_actual += timedelta(minutes=40)
 
     # Disponibles
-    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=?", (peluquero_id,))
+    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=%s", (peluquero_id,))
     disponibles = set((row[0], row[1]) for row in c.fetchall())
 
     # Ocupados
-    c.execute("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=?", (peluquero_id,))
+    c.execute("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=%s", (peluquero_id,))
     ocupados = {
         (row[0], row[1]): {"nombre": row[2], "telefono": row[3]}
         for row in c.fetchall()
@@ -521,7 +521,7 @@ def ver_calendario(peluquero_id):
         cancelar_dia = request.args.get("cancelar_dia")
         cancelar_hora = request.args.get("cancelar_hora")
         if cancelar_dia and cancelar_hora:
-            c.execute(adapt_query("DELETE FROM citas WHERE peluquero_id=? AND dia=? AND hora=?"),
+            c.execute(adapt_query("DELETE FROM citas WHERE peluquero_id=%s AND dia=%s AND hora=%s"),
                       (peluquero_id, cancelar_dia, cancelar_hora))
             conn.commit()
 
@@ -530,7 +530,7 @@ def ver_calendario(peluquero_id):
         bloquear_dia = request.args.get("bloquear_dia")
         bloquear_hora = request.args.get("bloquear_hora")
         if bloquear_dia and bloquear_hora:
-            c.execute(adapt_query("DELETE FROM horarios WHERE peluquero_id=? AND dia=? AND hora=?"),
+            c.execute(adapt_query("DELETE FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s"),
                       (peluquero_id, bloquear_dia, bloquear_hora))
             conn.commit()
 
@@ -538,12 +538,12 @@ def ver_calendario(peluquero_id):
         activar_hora = request.args.get("activar_hora")
         if activar_dia and activar_hora:
             c.execute(adapt_query(
-                "INSERT OR IGNORE INTO horarios (peluquero_id, dia, hora) VALUES (?, ?, ?)"
+                "INSERT OR IGNORE INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)"
             ), (peluquero_id, activar_dia, activar_hora))
             conn.commit()
 
     # Obtener nombre peluquero
-    c.execute(adapt_query("SELECT nombre FROM peluqueros WHERE id=?"), (peluquero_id,))
+    c.execute(adapt_query("SELECT nombre FROM peluqueros WHERE id=%s"), (peluquero_id,))
     peluquero = c.fetchone()
     if not peluquero:
         conn.close()
@@ -559,11 +559,11 @@ def ver_calendario(peluquero_id):
         hora_actual += timedelta(minutes=40)
 
     # Disponibles
-    c.execute(adapt_query("SELECT dia, hora FROM horarios WHERE peluquero_id=?"), (peluquero_id,))
+    c.execute(adapt_query("SELECT dia, hora FROM horarios WHERE peluquero_id=%s"), (peluquero_id,))
     disponibles = set((row[0], row[1]) for row in c.fetchall())
 
     # Ocupados
-    c.execute("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=?", (peluquero_id,))
+    c.execute("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=%s", (peluquero_id,))
     ocupados = {
         (row[0], row[1]): {"nombre": row[2], "telefono": row[3]}
         for row in c.fetchall()
