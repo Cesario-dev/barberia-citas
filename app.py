@@ -183,44 +183,6 @@ def agendar():
 
     return f"✅ Tu cita con el peluquero {peluquero_id} fue agendada el {dia} a las {hora}."
 
-@app.route("/admin/peluqueros/agregar", methods=["POST"])
-def agregar_peluquero():
-    if "peluquero_id" not in session or not session.get("es_admin"):
-        flash("Acceso denegado.")
-        return redirect(url_for("login"))
-
-    nombre = request.form.get("nombre")
-    password = request.form.get("password")
-    es_admin = 1 if request.form.get("es_admin") else 0
-    foto_file = request.files.get("foto")
-
-    # ⚡ Validaciones
-    if not nombre or not password:
-        flash("Nombre y contraseña son obligatorios.")
-        return redirect(url_for("admin_peluqueros"))
-
-    # 🔐 Guardar contraseña en hash
-    password_hash = generate_password_hash(password)
-
-    # 📷 Guardar foto si existe
-    foto_filename = None
-    if foto_file and foto_file.filename != "":
-        foto_filename = f"{nombre.lower()}_{foto_file.filename}"
-        foto_path = os.path.join(UPLOAD_FOLDER, foto_filename)
-        foto_file.save(foto_path)
-
-    try:
-        with get_conn() as conn:
-            with conn.cursor() as c:
-                c.execute("""
-                    INSERT INTO peluqueros (nombre, password, es_admin, foto)
-                    VALUES (%s, %s, %s, %s)
-                """, (nombre, password_hash, es_admin, foto_filename))
-        flash("Peluquero agregado con éxito.")
-    except Exception as e:
-        flash(f"Error al agregar peluquero: {e}")
-
-    return redirect(url_for("admin_peluqueros"))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
