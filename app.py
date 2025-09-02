@@ -41,27 +41,27 @@ def init_schema():
             usuario TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             foto TEXT,
-            es_admin INTEGER DEFAULT 0
-        )
+            es_admin BOOLEAN DEFAULT 0
+        );
+
     """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS horarios (
             id SERIAL PRIMARY KEY,
-            peluquero_id INTEGER NOT NULL,
+            peluquero_id INTEGER NOT NULL REFERENCES peluqueros(id) ON DELETE CASCADE,
             dia TEXT NOT NULL,
-            hora TEXT NOT NULL,
-            UNIQUE (peluquero_id, dia, hora)
-        )
+            hora TEXT NOT NULL
+        );
     """)
     c.execute("""
         CREATE TABLE IF NOT EXISTS citas (
             id SERIAL PRIMARY KEY,
-            peluquero_id INTEGER NOT NULL,
+            peluquero_id INTEGER NOT NULL REFERENCES peluqueros(id) ON DELETE CASCADE,
             dia TEXT NOT NULL,
             hora TEXT NOT NULL,
             nombre TEXT NOT NULL,
             telefono TEXT NOT NULL
-        )
+        );
     """)
     conn.commit()
     conn.close()
