@@ -22,16 +22,10 @@ else:
     DB_NAME = "barberia.db"
 
 def get_conn():
-    if USE_POSTGRES:
-        return psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-    else:
-        return sqlite3.connect(DB_NAME)
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise Exception("❌ No se encontró la variable DATABASE_URL")
+    return psycopg2.connect(database_url)
 
 def adapt_query(query: str) -> str:
     return query.replace("?", "%s") if USE_POSTGRES else query
