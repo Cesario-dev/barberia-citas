@@ -118,11 +118,19 @@ def init_db_legacy():
         # Barberos de prueba
         c.execute(adapt_query(
             "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
-        ), ("Carlos", "carlos", generate_password_hash("1234"), "/static/carlos.png", 0))
+        ), ("Camilo", "camilo", generate_password_hash("1234"), "/static/camilo.png", 0))
 
         c.execute(adapt_query(
             "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
         ), ("Luis", "luis", generate_password_hash("1234"), "/static/luis.png", 0))
+
+        c.execute(adapt_query(
+            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
+        ), ("Manuel", "manuel", generate_password_hash("1234"), "/static/manuel.png", 0))
+
+        c.execute(adapt_query(
+            "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
+        ), ("Juan", "juan", generate_password_hash("1234"), "/static/juan.png", 0))
 
         conn.commit()
     conn.close()
