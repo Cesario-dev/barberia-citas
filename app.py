@@ -379,7 +379,7 @@ def agregar_peluquero():
     conn = get_conn()
     c = conn.cursor()
     c.execute("INSERT INTO peluqueros (nombre, password, es_admin, foto) VALUES (%s, %s, %s, %s)",
-              (nombre, password, es_admin, foto))
+              (nombre, usuario, password, es_admin, foto))
     conn.commit()
     conn.close()
 
@@ -409,10 +409,10 @@ def editar_peluquero(id):
 
     if password:  # si cambia contraseña
         c.execute("UPDATE peluqueros SET nombre=%s, password=%s, es_admin=%s, foto=%s WHERE id=%s",
-                  (nombre, password, es_admin, foto, id))
+                  (nombre, usuario, password, es_admin, foto, id))
     else:  # sin cambio de contraseña
         c.execute("UPDATE peluqueros SET nombre=%s, es_admin=%s, foto=%s WHERE id=%s",
-                  (nombre, es_admin, foto, id))
+                  (nombre, usuario, es_admin, foto, id))
 
     conn.commit()
     conn.close()
