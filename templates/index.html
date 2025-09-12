@@ -77,6 +77,13 @@
             padding: 10px;
         }
 
+        .peluqueros-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* exactamente 2 columnas */
+            gap: 30px;                              /* espacio entre tarjetas */
+            justify-items: center;                   /* centra cada .peluquero */
+        }
+
         .peluquero img {
             width: 150px;
             height: 150px;
@@ -111,15 +118,17 @@
     </header>
 
     <main>
-        {% for id, nombre, foto in peluqueros %}
-            <div class="peluquero">
-                <img src="{{ url_for('static', filename='img_peluqueros/' + foto) }}" alt="{{ nombre }}">
-                <p>{{ nombre }}</p>
-                <a href="{{ url_for('calendario_cliente', peluquero_id=id) }}">
-                    <button>Agendar</button>
-                </a>
-            </div>
-        {% endfor %}
+        <div class="peluqueros-grid">
+            {% for id, nombre, foto in peluqueros %}
+                <div class="peluquero">
+                    <img src="{{ url_for('static', filename='img_peluqueros/' + foto) }}" alt="{{ nombre }}">
+                    <p>{{ nombre }}</p>
+                    <a href="{{ url_for('calendario_cliente', peluquero_id=id) }}">
+                        <button>Agendar</button>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>    
     </main>
 
     <footer>
