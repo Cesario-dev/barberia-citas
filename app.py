@@ -365,6 +365,7 @@ def agregar_peluquero():
         return redirect(url_for('login'))
 
     nombre = request.form.get("nombre")
+    usuario = request.form.get("usuario") 
     password = request.form.get("password")
     es_admin = 1 if request.form.get("es_admin") else 0
     foto = None
@@ -392,6 +393,7 @@ def editar_peluquero(id):
         return redirect(url_for('login'))
 
     nombre = request.form.get("nombre")
+    usuario = request.form.get("usuario") 
     password = request.form.get("password")
     es_admin = 1 if request.form.get("es_admin") else 0
     foto = None
