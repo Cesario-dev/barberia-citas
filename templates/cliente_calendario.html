@@ -98,7 +98,7 @@
 <div id="modal">
     <div id="modal-content">
         <h3>Agendar cita</h3>
-        <form method="POST" action="{{ url_for('agendar') }}" onsubmit="return validarFormulario()">
+        <form id="agendar-form" onsubmit="return false;">
             <input type="hidden" name="peluquero_id" id="peluquero_id">
             <input type="hidden" name="dia" id="dia">
             <input type="hidden" name="hora" id="hora">
@@ -111,6 +111,7 @@
             <button type="submit">Confirmar</button>
             <button type="button" id="cerrar">Cancelar</button>
         </form>
+        <p id="confirm-msg" style="color:black; margin-top:15px; display:none;"></p>
     </div>
 </div>
 
@@ -136,6 +137,33 @@ document.querySelectorAll('.btn-agendar').forEach(btn => {
 
 document.getElementById('cerrar').addEventListener('click', function() {
     document.getElementById('modal').style.display = 'none';
+});
+</script>
+<script>
+document.getElementById('agendar-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const resp = await fetch("{{ url_for('agendar') }}", {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await resp.json();
+    if (data.success) {
+        // Oculta los inputs y muestra mensaje
+        this.style.display = 'none';
+        const msg = document.getElementById('confirm-msg');
+        msg.textContent = data.message;
+        msg.style.display = 'block';
+    } else {
+        alert(data.message || "Error al agendar");
+    }
+});
+
+// Al cerrar, vuelve a la página inicial
+document.getElementById('cerrar').addEventListener('click', function() {
+    window.location.href = "{{ url_for('index') }}";
 });
 </script>
 
