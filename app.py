@@ -288,7 +288,7 @@ def calendario_cliente(peluquero_id):
     return render_template(
         "cliente_calendario.html",
         peluquero_id=peluquero_id,
-        nombre_peluquero=nombre_peluquero
+        nombre_peluquero=nombre_peluquero,
         dias=dias,
         horas=horas,
         disponibles=disponibles,
