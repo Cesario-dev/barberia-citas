@@ -168,6 +168,12 @@ def agendar():
     nombre = request.form.get("nombre")
     telefono = request.form.get("telefono")
 
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("SELECT nombre FROM peluqueros WHERE id = %s", (peluquero_id,))
+    row = c.fetchone()
+    nombre_peluquero = row[0] if row else "desconocido"
+
     if not (peluquero_id and dia and hora and nombre and telefono):
         return "Faltan datos para agendar la cita", 400
 
@@ -190,7 +196,7 @@ def agendar():
     conn.close()
 
     return {"success": True,
-            "message": f"Tu cita con {peluquero_id} fue agendada el {dia} a las {hora}."}
+            "message": f"Tu cita con {nombre_peluquero} fue agendada el {dia} a las {hora}."}
 
 
 @app.route('/login', methods=['GET', 'POST'])
