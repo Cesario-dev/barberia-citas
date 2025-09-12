@@ -189,7 +189,8 @@ def agendar():
     conn.commit()
     conn.close()
 
-    return f"✅ Tu cita con el peluquero {peluquero_id} fue agendada el {dia} a las {hora}."
+    return {"success": True,
+            "message": f"Tu cita con {peluquero_id} fue agendada el {dia} a las {hora}."}
 
 
 @app.route('/login', methods=['GET', 'POST'])
