@@ -87,7 +87,7 @@ def cargar_horarios_40_minutos(peluquero_id):
         for dia in dias:
             actual = hora_actual
             while actual <= fin:
-                hora = actual.strftime("%H:%M")
+                hora = actual.strftime("%I:%M %p")
                 c.execute(adapt_query(
                     "SELECT 1 FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s"
                 ), (peluquero_id, dia, hora))
@@ -267,7 +267,7 @@ def calendario_cliente(peluquero_id):
     hora_actual = datetime.strptime("10:00", "%H:%M")
     fin = datetime.strptime("21:00", "%H:%M")
     while hora_actual <= fin:
-        horas.append(hora_actual.strftime("%H:%M"))
+        horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
 
     # Horarios disponibles
@@ -485,7 +485,7 @@ def ver_calendario_admin(peluquero_id):
     hora_actual = datetime.strptime("10:00", "%H:%M")
     fin = datetime.strptime("21:00", "%H:%M")
     while hora_actual <= fin:
-        horas.append(hora_actual.strftime("%H:%M"))
+        horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
 
     # Disponibles
@@ -568,7 +568,7 @@ def ver_calendario(peluquero_id):
     hora_actual = datetime.strptime("10:00", "%H:%M")
     fin = datetime.strptime("21:00", "%H:%M")
     while hora_actual <= fin:
-        horas.append(hora_actual.strftime("%H:%M"))
+        horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
 
     # Disponibles
