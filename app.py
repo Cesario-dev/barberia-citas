@@ -258,6 +258,11 @@ def calendario_cliente(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
+    # ←--- NUEVO: obtener el nombre
+    c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
+    row = c.fetchone()
+    nombre_peluquero = row[0] if row else "Desconocido"
+
     # Días de lunes a domingo
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
@@ -283,6 +288,7 @@ def calendario_cliente(peluquero_id):
     return render_template(
         "cliente_calendario.html",
         peluquero_id=peluquero_id,
+        nombre_peluquero=nombre_peluquero
         dias=dias,
         horas=horas,
         disponibles=disponibles,
