@@ -322,6 +322,11 @@ def admin_peluqueros():
             usuario = request.form["usuario"]
             password = request.form["password"]
             foto = request.form["foto"]
+            ruta_db = f"/static/img_peluqueros/{foto}"
+            c.execute(
+                "UPDATE peluqueros SET foto=%s WHERE id=%s",
+                (ruta_db, id)
+            )
             c.execute(adapt_query(
                 "INSERT INTO peluqueros (nombre, usuario, password, foto, es_admin) VALUES (%s, %s, %s, %s, %s)"
             ), (nombre, usuario, password, foto, 0))
@@ -332,6 +337,11 @@ def admin_peluqueros():
             nombre = request.form["nombre"]
             usuario = request.form["usuario"]
             foto = request.form["foto"]
+            ruta_db = f"/static/img_peluqueros/{foto}"
+            c.execute(
+                "UPDATE peluqueros SET foto=%s WHERE id=%s",
+                (ruta_db, id)
+            )
             c.execute(adapt_query(
                 "UPDATE peluqueros SET nombre=%s, usuario=%s, foto=%s WHERE id=%s"
             ), (nombre, usuario, foto, peluquero_id))
