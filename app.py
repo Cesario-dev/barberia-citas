@@ -197,9 +197,9 @@ def agendar():
 
     return {"success": True,
             "message": (
-                f"Tu cita fue agendada con exito el {dia} a las {hora} con {nombre_peluquero} /n"
-                f"Te esperamos /n"
-                f"Si deseas cancelar tu cita debes comunicarte con nosotros vía whatsapp /n"
+                f"Tu cita fue agendada con exito el {dia} a las {hora} con {nombre_peluquero} \n"
+                f"Te esperamos \n"
+                f"Si deseas cancelar tu cita debes comunicarte con nosotros vía whatsapp"
             )
            }
 
