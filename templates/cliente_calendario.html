@@ -106,9 +106,9 @@
                         </button>
                     </td>
                 {% elif (dia, hora) in bloqueados %}
-                    <td class="bloqueado">No disponible</td>
+                    <td class="ocupado">Ocupado</td>
                 {% else %}
-                    <td class="bloqueado">No disponible</td>
+                    <td class="ocupado">Ocupado</td>
                 {% endif %}
             {% endfor %}
         </tr>
