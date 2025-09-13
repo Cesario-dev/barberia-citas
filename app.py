@@ -152,7 +152,7 @@ def debug_peluqueros():
 def index():
     conn = get_conn()
     c = conn.cursor()
-    c.execute("SELECT id, nombre, foto FROM peluqueros ORDER BY id ASC")
+    c.execute("SELECT id, nombre, foto FROM peluqueros WHERE es_admin=0 ORDER BY nombre ASC")
     peluqueros = c.fetchall()
     conn.close()
     return render_template("index.html", peluqueros=peluqueros)
