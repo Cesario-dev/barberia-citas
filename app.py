@@ -196,7 +196,10 @@ def agendar():
     conn.close()
 
     return {"success": True,
-            "message": f"Tu cita con {nombre_peluquero} fue agendada el {dia} a las {hora}."}
+            "message": f"""Tu cita fue agendada con exito con {nombre_peluquero} el dia {dia} a las {hora}
+
+Te recordamos que si deseas cancelar tu cita debes comunicarte via whatsapp con nosotros"""
+           }
 
 
 @app.route('/login', methods=['GET', 'POST'])
