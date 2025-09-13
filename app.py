@@ -626,6 +626,39 @@ def ver_calendario(peluquero_id):
                            ocupados=ocupados,
                            bloqueados=bloqueados)
 
+@app.route('/admin/toggle_fijo/<int:cita_id>', methods=['POST'])
+def toggle_fijo(cita_id):
+    conn = get_conn()
+    c = conn.cursor()
+    # Obtener valor actual
+    c.execute("SELECT fijo, peluquero_id FROM citas WHERE id = %s", (cita_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return redirect(request.referrer or url_for('index'))
+
+    fijo_actual, peluquero_id = row
+    # Invertir el valor
+    nuevo_valor = not fijo_actual
+
+    c.execute("UPDATE citas SET fijo = %s WHERE id = %s", (nuevo_valor, cita_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
+
+@app.route('/admin/liberar/<int:peluquero_id>', methods=['POST'])
+def liberar_citas(peluquero_id):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("""
+        DELETE FROM citas
+        WHERE peluquero_id = %s
+        AND fijo = FALSE
+    """, (peluquero_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
+
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
     init_schema()
