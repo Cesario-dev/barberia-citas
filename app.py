@@ -471,6 +471,7 @@ def ver_calendario_admin(peluquero_id):
 
     conn = get_conn()
     c = conn.cursor()
+    
 
     # ✅ Cancelar cita (solo admin)
     cancelar_dia = request.args.get('cancelar_dia')
@@ -523,9 +524,18 @@ def ver_calendario_admin(peluquero_id):
     disponibles = set((row[0], row[1]) for row in c.fetchall())
 
     # Ocupados
-    c.execute("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=%s", (peluquero_id,))
+    c.execute("""
+        SELECT id, dia, hora, nombre, telefono, fijo
+        FROM citas
+        WHERE peluquero_id=%s
+    """, (peluquero_id,))
     ocupados = {
-        (row[0], row[1]): {"nombre": row[2], "telefono": row[3]}
+        (row[1], row[2]): {          # clave (dia, hora)
+            "id": row[0],            # id de la cita
+            "nombre": row[3],
+            "telefono": row[4],
+            "fijo": row[5]           # True/False
+        }
         for row in c.fetchall()
     }
 
