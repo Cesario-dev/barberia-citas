@@ -74,7 +74,7 @@
                               {{ ocupados[(dia, hora)]['telefono'] }}
                             </a>
                         {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario', peluquero_id=peluquero_id, cancelar_dia=dia, cancelar_hora=hora) }}" class="btn-cancelar">Cancelar</a>
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, cancelar_dia=dia, cancelar_hora=hora) }}" class="btn-cancelar">Cancelar</a>
                         {% endif %}
                     </td>
                 {% elif (dia, hora) in disponibles %}
