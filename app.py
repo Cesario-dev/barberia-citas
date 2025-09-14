@@ -421,30 +421,43 @@ def editar_peluquero(id):
         return redirect(url_for('login'))
 
     nombre = request.form.get("nombre")
-    usuario = request.form.get("usuario") 
+    usuario = request.form.get("usuario")
     password = request.form.get("password")
     es_admin = 1 if request.form.get("es_admin") else 0
-    foto = None
-
-    if 'foto' in request.files:
-        file = request.files['foto']
-        if file and file.filename != "":
-            foto = secure_filename(file.filename)
-            file.save(os.path.join("static/img_peluqueros", foto))
 
     conn = get_conn()
     c = conn.cursor()
 
+    # ✅ 1. Obtener la foto actual de la base
+    c.execute("SELECT foto FROM peluqueros WHERE id=%s", (id,))
+    foto_actual = c.fetchone()[0]
+
+    # ✅ 2. Solo reemplazar si se subió una nueva
+    foto_path = foto_actual
+    if 'foto' in request.files:
+        file = request.files['foto']
+        if file and file.filename != "":
+            from werkzeug.utils import secure_filename
+            filename = secure_filename(file.filename)
+            file.save(os.path.join("static/img_peluqueros", filename))
+            foto_path = f"/static/img_peluqueros/{filename}"
+
+    # ✅ 3. Actualizar
     if password:  # si cambia contraseña
-        c.execute("UPDATE peluqueros SET nombre=%s, usuario=%s, password=%s, es_admin=%s, foto=%s WHERE id=%s",
-                  (nombre, usuario, password, es_admin, foto, id))
-    else:  # sin cambio de contraseña
-        c.execute("UPDATE peluqueros SET nombre=%s, usuario=%s, es_admin=%s, foto=%s WHERE id=%s",
-                  (nombre, usuario, es_admin, foto, id))
+        c.execute("""
+            UPDATE peluqueros
+            SET nombre=%s, usuario=%s, password=%s, es_admin=%s, foto=%s
+            WHERE id=%s
+        """, (nombre, usuario, password, es_admin, foto_path, id))
+    else:
+        c.execute("""
+            UPDATE peluqueros
+            SET nombre=%s, usuario=%s, es_admin=%s, foto=%s
+            WHERE id=%s
+        """, (nombre, usuario, es_admin, foto_path, id))
 
     conn.commit()
     conn.close()
-
     return redirect(url_for('admin_peluqueros'))
 
 
