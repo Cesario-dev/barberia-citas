@@ -71,6 +71,12 @@
         #confirm-msg {
             white-space: pre-line;
         }
+        .hora-label {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 4px; /* espacio entre hora y botón */
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +107,7 @@
                     <td class="ocupado">Ocupado</td>
                 {% elif (dia, hora) in disponibles %}
                     <td class="disponible">
+                        <div class="hora-label">{{ hora }}</div>
                         <button type="button" class="btn-agendar"
                             data-peluquero="{{ peluquero_id }}"
                             data-dia="{{ dia }}"
