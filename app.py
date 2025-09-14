@@ -395,7 +395,7 @@ def agregar_peluquero():
     nombre = request.form.get("nombre")
     usuario = request.form.get("usuario") 
     password = request.form.get("password")
-    telefono = request.for.get("telefono")
+    telefono = request.form.get("telefono")
     es_admin = 1 if request.form.get("es_admin") else 0
     foto = None
 
@@ -431,7 +431,7 @@ def editar_peluquero(id):
 
     # ✅ 1. Obtener la foto actual de la base
     c.execute("SELECT foto, telefono FROM peluqueros WHERE id=%s", (id,))
-    foto_actual, telefono actual = c.fetchone()
+    foto_actual, telefono_actual = c.fetchone()
 
     # ✅ 2. Solo reemplazar si se subió una nueva
     foto_path = foto_actual
