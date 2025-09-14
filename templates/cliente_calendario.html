@@ -117,8 +117,8 @@
             {% for dia in dias %}
                 {% if (dia, hora) in ocupados %}
                     <td class="ocupado">
-                        Ocupado
                         <div class="hora-label">{{ hora }}</div>
+                        Ocupado
                     </td>
                 {% elif (dia, hora) in disponibles %}
                     <td class="disponible">
