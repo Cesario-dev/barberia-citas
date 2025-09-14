@@ -105,6 +105,21 @@
         button:hover {
             background-color: #ffcc00;
         }
+        .red-social {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        .red-social:hover { color: #ffcc00; }
+        
+        .icono-red {
+            width: 24px;
+            height: 24px;
+            margin-right: 6px; /* separación entre icono y texto */
+        }
     </style>
 </head>
 <body>
@@ -133,9 +148,20 @@
 
     <footer>
         <p>Síguenos en:</p>
-        <a href="https://www.facebook.com/share/1F3eTReS3t/?mibextid=wwXIfr" target="_blank">Facebook</a>
-        <a href="https://www.instagram.com/vip_barbertop?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank">Instagram</a>
-        <a href="https://www.tiktok.com/@vip_barbertop?_r=1&_d=e2gac3bl8ij6a3&sec_uid=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&share_author_id=7226022425540215813&sharer_language=es&source=h5_m&u_code=e7gkkik21ge9jl&ug_btm=b8727,b0&social_share_type=4&utm_source=copy&sec_user_id=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&tt_from=copy&utm_medium=ios&utm_campaign=client_share&enable_checksum=1&user_id=7226022425540215813&share_link_id=3CC01BDB-2770-4A0E-9626-A8DE3C55F97F&share_app_id=1233" target="_blank">TikTok</a>
+        <a href="https://www.instagram.com/vip_barbertop?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="red-social">
+          <img src="{{ url_for('static', filename='icons/instagram.svg') }}" alt="Instagram" class="icono-red">
+          Instagram
+        </a>
+        
+        <a href="https://www.tiktok.com/@vip_barbertop?_r=1&_d=e2gac3bl8ij6a3&sec_uid=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&share_author_id=7226022425540215813&sharer_language=es&source=h5_m&u_code=e7gkkik21ge9jl&ug_btm=b8727,b0&social_share_type=4&utm_source=copy&sec_user_id=MS4wLjABAAAAGvtBrJTUApKqVjf0yfr3h8zj2Qjs39mKKztfW_6R419i6hs7crwhO6-F35ZPzZS_&tt_from=copy&utm_medium=ios&utm_campaign=client_share&enable_checksum=1&user_id=7226022425540215813&share_link_id=3CC01BDB-2770-4A0E-9626-A8DE3C55F97F&share_app_id=1233" target="_blank" class="red-social">
+          <img src="{{ url_for('static', filename='icons/tiktok.svg') }}" alt="TikTok" class="icono-red">
+          TikTok
+        </a>
+        
+        <a href="https://www.facebook.com/share/1F3eTReS3t/?mibextid=wwXIfr" target="_blank" class="red-social">
+          <img src="{{ url_for('static', filename='icons/facebook.svg') }}" alt="Facebook" class="icono-red">
+          Facebook
+        </a>    
     </footer>
 
 </body>
