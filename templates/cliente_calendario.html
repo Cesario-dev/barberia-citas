@@ -128,11 +128,15 @@
                         </button>
                     </td>
                 {% elif (dia, hora) in bloqueados %}
-                    <td class="ocupado">Ocupado</td>
+                    <td class="ocupado">
                         <div class="hora-label">{{ hora }}</div>
+                        Ocupado
+                    </td>
                 {% else %}
-                    <td class="ocupado">Ocupado</td>
+                    <td class="ocupado">
                         <div class="hora-label">{{ hora }}</div>
+                        Ocupado
+                    </td>
                 {% endif %}
             {% endfor %}
         </tr>
