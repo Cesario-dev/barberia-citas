@@ -395,6 +395,7 @@ def agregar_peluquero():
     nombre = request.form.get("nombre")
     usuario = request.form.get("usuario") 
     password = request.form.get("password")
+    telefono = request.for.get("telefono")
     es_admin = 1 if request.form.get("es_admin") else 0
     foto = None
 
@@ -406,8 +407,8 @@ def agregar_peluquero():
 
     conn = get_conn()
     c = conn.cursor()
-    c.execute("INSERT INTO peluqueros (nombre, usuario, password, es_admin, foto) VALUES (%s, %s, %s, %s, %s)",
-              (nombre, usuario, password, es_admin, foto))
+    c.execute("INSERT INTO peluqueros (nombre, usuario, password, es_admin, foto, telefono) VALUES (%s, %s, %s, %s, %s, %s)",
+              (nombre, usuario, password, es_admin, foto, telefono))
     conn.commit()
     conn.close()
 
@@ -429,8 +430,8 @@ def editar_peluquero(id):
     c = conn.cursor()
 
     # ✅ 1. Obtener la foto actual de la base
-    c.execute("SELECT foto FROM peluqueros WHERE id=%s", (id,))
-    foto_actual = c.fetchone()[0]
+    c.execute("SELECT foto, telefono FROM peluqueros WHERE id=%s", (id,))
+    foto_actual, telefono actual = c.fetchone()
 
     # ✅ 2. Solo reemplazar si se subió una nueva
     foto_path = foto_actual
@@ -442,19 +443,24 @@ def editar_peluquero(id):
             file.save(os.path.join("static/img_peluqueros", filename))
             foto_path = f"/static/img_peluqueros/{filename}"
 
+    # Si el formulario no envía teléfono, usar el existente
+    telefono_nuevo = request.form.get("telefono")
+    if not telefono_nuevo:
+        telefono_nuevo = telefono_actual
+
     # ✅ 3. Actualizar
     if password:  # si cambia contraseña
         c.execute("""
             UPDATE peluqueros
-            SET nombre=%s, usuario=%s, password=%s, es_admin=%s, foto=%s
+            SET nombre=%s, usuario=%s, password=%s, es_admin=%s, foto=%s, telefono=%s
             WHERE id=%s
-        """, (nombre, usuario, password, es_admin, foto_path, id))
+        """, (nombre, usuario, password, es_admin, foto_path, telefono_nuevo, id))
     else:
         c.execute("""
             UPDATE peluqueros
-            SET nombre=%s, usuario=%s, es_admin=%s, foto=%s
+            SET nombre=%s, usuario=%s, es_admin=%s, foto=%s, telefono=%s
             WHERE id=%s
-        """, (nombre, usuario, es_admin, foto_path, id))
+        """, (nombre, usuario, es_admin, foto_path, telefono_nuevo, id))
 
     conn.commit()
     conn.close()
