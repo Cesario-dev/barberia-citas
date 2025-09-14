@@ -128,8 +128,10 @@
                         </button>
                     </td>
                 {% elif (dia, hora) in bloqueados %}
+                    <div class="hora-label">{{ hora }}</div>
                     <td class="ocupado">Ocupado</td>
                 {% else %}
+                    <div class="hora-label">{{ hora }}</div>
                     <td class="ocupado">Ocupado</td>
                 {% endif %}
             {% endfor %}
