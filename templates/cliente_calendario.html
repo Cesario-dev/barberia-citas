@@ -77,15 +77,18 @@
             margin-bottom: 4px; /* espacio entre hora y botón */
             display: block;
         }
-        header img {
-            margin-top: 20px;
-            max-width: 360px;
-            align-items: center;
+        h1 {
+            margin-top: 10px;
+            font-size: 4em;
+            text-align: center;
+            color: #e6b800
         }
     </style>
 </head>
 <body>
-
+<header>
+    <h1>VIP BARBER TOP</h1>
+</header>
 <h2>{{ nombre_peluquero }}: Agenda Para Esta Semana</h2>
 
 {% if msg %}
@@ -129,9 +132,7 @@
     </tbody>
 </table>
 
-<header>
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo barbería">
-</header>
+
 
 <!-- Modal -->
 <div id="modal">
