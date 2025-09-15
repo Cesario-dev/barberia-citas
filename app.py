@@ -688,6 +688,39 @@ def liberar_citas(peluquero_id):
     conn.close()
     return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
 
+@app.route("/admin/agregar_turno_global", methods=["POST"])
+def agregar_turno_global():
+    if 'peluquero_id' not in session or not session.get('es_admin'):
+        return redirect(url_for('login'))
+
+    dia = request.form.get("dia").lower()
+    hora = request.form.get("hora")
+    am_pm = request.form.get("am_pm")
+    hora_completa = f"{hora} {am_pm}"
+
+    conn = get_conn()
+    c = conn.cursor()
+
+    # obtén todos los peluqueros
+    c.execute("SELECT id FROM peluqueros WHERE es_admin=0")
+    todos = c.fetchall()
+
+    for (pid,) in todos:
+        try:
+            c.execute(
+                "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
+                (pid, dia, hora_completa)
+            )
+        except:
+            # si ya existe ese horario para ese peluquero, lo ignoramos
+            conn.rollback()
+            continue
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('admin'))  # o a la página de admin que prefieras
+
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
     init_schema()
