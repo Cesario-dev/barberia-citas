@@ -713,15 +713,16 @@ def gestionar_turno_global():
 
         dias_a_insertar = dias_semana if dia == "todos" else [dia]
         
-        for (pid,) in c.fetchall():
-            try:
-                c.execute(
-                    "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
-                    (pid, dia, hora_norm)
-                )
-            except:
-                conn.rollback()  # ignora duplicados
-                continue
+        for pid in peluqueros:
+            for d in dias_a_insertar:     # ✅ usa d, no dia
+                try:
+                    c.execute(
+                        "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
+                        (pid, d, hora_norm)
+                    )
+                except:
+                    conn.rollback()
+                    continue
 
     elif accion == "eliminar":
         if dia == "todos":
