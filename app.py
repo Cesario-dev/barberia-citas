@@ -688,7 +688,7 @@ def liberar_citas(peluquero_id):
     conn.close()
     return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
 
-@app.route("/admin/agregar_turno_global", methods=["POST"])
+@app.route("/admin/gestionar_turno_global", methods=["POST"])
 def gestionar_turno_global():
     if 'peluquero_id' not in session or not session.get('es_admin'):
         return redirect(url_for('login'))
