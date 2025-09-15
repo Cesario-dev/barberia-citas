@@ -736,7 +736,7 @@ def gestionar_turno_global():
     conn.commit()
     conn.close()
 
-    return redirect(url_for('admin'))  # o a la página de admin que prefieras
+    return redirect(url_for('admin_panel'))  # o a la página de admin que prefieras
 
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
