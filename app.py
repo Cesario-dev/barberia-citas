@@ -270,26 +270,27 @@ def calendario_cliente(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    # ←--- NUEVO: obtener el nombre
+    # Nombre del peluquero
     c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
-    # Días de lunes a domingo
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
-    # Generar bloques de 40 minutos de 10 AM a 9 PM
-    from datetime import datetime, timedelta
-    horas = []
-    hora_actual = datetime.strptime("10:00", "%H:%M")
-    fin = datetime.strptime("23:00", "%H:%M")
-    while hora_actual <= fin:
-        horas.append(hora_actual.strftime("%I:%M %p"))
-        hora_actual += timedelta(minutes=40)
+    # 🔹 Obtener solo las horas que realmente existen en la DB
+    c.execute("""
+        SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
+        UNION
+        SELECT DISTINCT hora FROM citas    WHERE peluquero_id=%s
+    """, (peluquero_id, peluquero_id))
+    horas = sorted(
+        {row[0] for row in c.fetchall()},
+        key=lambda h: datetime.strptime(h, "%I:%M %p")
+    )
 
     # Horarios disponibles
     c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=%s", (peluquero_id,))
-    disponibles = set((row[0], row[1]) for row in c.fetchall())
+    disponibles = {(row[0], row[1]) for row in c.fetchall()}
 
     # Citas ocupadas
     c.execute("SELECT dia, hora, nombre FROM citas WHERE peluquero_id=%s", (peluquero_id,))
