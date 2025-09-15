@@ -82,7 +82,7 @@ def cargar_horarios_40_minutos(peluquero_id):
     try:
         dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
         hora_actual = datetime.strptime("10:00", "%H:%M")
-        fin = datetime.strptime("23:00", "%H:%M")
+        fin = datetime.strptime("21:00", "%H:%M")
 
         for dia in dias:
             actual = hora_actual
