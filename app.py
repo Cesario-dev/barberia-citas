@@ -707,7 +707,6 @@ def gestionar_turno_global():
     if accion == "agregar":
         # Insertar para todos los peluqueros no administradores
         c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
-        peluqueros = [pid for (pid,) in c.fetchall()]
 
         dias_a_insertar = dias_semana if dia == "todos" else [dia]
         
