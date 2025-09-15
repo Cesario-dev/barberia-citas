@@ -80,7 +80,7 @@
 
     {% if session.get('es_admin') %}
     <h2>Agregar turno extra para TODOS los peluqueros</h2>
-    <form action="{{ url_for('agregar_turno_global') }}" method="POST">
+    <form action="{{ url_for('gestionar_turno_global') }}" method="POST">
         <label for="dia_global">Día:</label>
         <select name="dia" id="dia_global" required>
             <option value="lunes">LUNES</option>
