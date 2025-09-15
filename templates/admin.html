@@ -78,38 +78,31 @@
         <a href="/logout">Cerrar sesión</a>
     </p>
 
-    <h2>Agregar nuevo horario</h2>
-    <form method="POST">
-        <label for="dia">Día:</label>
-        <select name="dia" required>
-            <option value="lunes">Lunes</option>
-            <option value="martes">Martes</option>
-            <option value="miercoles">Miércoles</option>
-            <option value="jueves">Jueves</option>
-            <option value="viernes">Viernes</option>
+    {% if session.get('es_admin') %}
+    <h2>Agregar turno extra para TODOS los peluqueros</h2>
+    <form action="{{ url_for('agregar_turno_global') }}" method="POST">
+        <label for="dia_global">Día:</label>
+        <select name="dia" id="dia_global" required>
+            <option value="lunes">LUNES</option>
+            <option value="martes">MARTES</option>
+            <option value="miercoles">MIÉRCOLES</option>
+            <option value="jueves">JUEVES</option>
+            <option value="viernes">VIERNES</option>
+            <option value="sabado">SÁBADO</option>
+            <option value="domingo">DOMINGO</option>
         </select>
-
-        <label for="hora">Hora:</label>
-        <input type="time" name="hora" required>
-
-        <button type="submit">Agregar</button>
+    
+        <label for="hora_global">Hora:</label>
+        <input type="text" name="hora" id="hora_global" placeholder="Ej: 08:40" required>
+    
+        <label for="am_pm">AM/PM:</label>
+        <select name="am_pm" id="am_pm" required>
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+        </select>
+    
+        <button type="submit">Agregar turno a todos</button>
     </form>
-
-    <h2>Horarios actuales</h2>
-
-    {% set dias_ordenados = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'] %}
-
-    {% for dia in dias_ordenados %}
-        <details>
-            <summary>{{ dia.capitalize() }}</summary>
-            <ul>
-                {% for id, dia_h, hora in horarios %}
-                    {% if dia_h == dia %}
-                        <li>{{ hora }} <a href="/admin/{{ peluquero_id }}?eliminar={{ id }}">Eliminar</a></li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </details>
-    {% endfor %}
+    {% endif %}
 </body>
 </html>
