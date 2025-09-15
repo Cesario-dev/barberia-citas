@@ -694,9 +694,12 @@ def gestionar_turno_global():
         return redirect(url_for('login'))
 
     dia = request.form.get("dia").lower()
-    hora = request.form.get("hora")
-    am_pm = request.form.get("am_pm")
-    hora_completa = f"{hora} {am_pm}"
+    hora = request.form.get("hora")          # viene como '08:40' o '8:40'
+    am_pm = request.form.get("am_pm")        # 'AM' o 'PM'
+
+    # ✅ Normalizar a formato %I:%M %p (ej: "08:40 PM")
+    hora_norm = datetime.strptime(f"{hora} {am_pm}", "%I:%M %p").strftime("%I:%M %p")
+
     accion = request.form.get("accion")
 
     dias_semana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
@@ -714,7 +717,7 @@ def gestionar_turno_global():
             try:
                 c.execute(
                     "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
-                    (pid, dia, hora_completa)
+                    (pid, dia, hora_norm)
                 )
             except:
                 conn.rollback()  # ignora duplicados
@@ -724,12 +727,12 @@ def gestionar_turno_global():
         if dia == "todos":
             c.execute(
                 "DELETE FROM horarios WHERE dia IN %s AND hora=%s",
-                (tuple(dias_semana), hora_completa)
+                (tuple(dias_semana), hora_norm)
             )
         else:
             c.execute(
                 "DELETE FROM horarios WHERE dia=%s AND hora=%s",
-                (dia, hora_completa)
+                (dia, hora_norm)
             )
 
     conn.commit()
