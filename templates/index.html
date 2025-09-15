@@ -136,7 +136,7 @@
         <div class="peluqueros-grid">
             {% for id, nombre, foto in peluqueros %}
                 <div class="peluquero">
-                    <img src="{{ url_for('static', filename='img_peluqueros/' + foto) }}" alt="{{ nombre }}">
+                    <img src="{{ foto }}" alt="{{ nombre }}">
                     <p>{{ nombre }}</p>
                     <a href="{{ url_for('calendario_cliente', peluquero_id=id) }}">
                         <button>Agendar</button>
