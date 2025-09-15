@@ -704,6 +704,7 @@ def ver_calendario(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados
+        es_admin=session.get("es_admin", False)
     )
 
 @app.route('/admin/toggle_fijo/<int:cita_id>', methods=['POST'])
