@@ -282,7 +282,7 @@ def calendario_cliente(peluquero_id):
     from datetime import datetime, timedelta
     horas = []
     hora_actual = datetime.strptime("10:00", "%H:%M")
-    fin = datetime.strptime("21:00", "%H:%M")
+    fin = datetime.strptime("23:00", "%H:%M")
     while hora_actual <= fin:
         horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
@@ -533,7 +533,7 @@ def ver_calendario_admin(peluquero_id):
 
     from datetime import datetime, timedelta
     hora_actual = datetime.strptime("10:00", "%H:%M")
-    fin = datetime.strptime("21:00", "%H:%M")
+    fin = datetime.strptime("23:00", "%H:%M")
     while hora_actual <= fin:
         horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
@@ -625,7 +625,7 @@ def ver_calendario(peluquero_id):
     dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
     horas = []
     hora_actual = datetime.strptime("10:00", "%H:%M")
-    fin = datetime.strptime("21:00", "%H:%M")
+    fin = datetime.strptime("23:00", "%H:%M")
     while hora_actual <= fin:
         horas.append(hora_actual.strftime("%I:%M %p"))
         hora_actual += timedelta(minutes=40)
