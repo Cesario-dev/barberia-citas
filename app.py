@@ -707,6 +707,10 @@ def gestionar_turno_global():
     conn = get_conn()
     c = conn.cursor()
 
+     # ✅ Obtener peluqueros NO administradores una sola vez
+    c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
+    peluqueros = [row[0] for row in c.fetchall()]
+
     if accion == "agregar":
         # Insertar para todos los peluqueros no administradores
         c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
