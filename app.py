@@ -393,23 +393,46 @@ def agregar_peluquero():
     if 'peluquero_id' not in session or not session.get('es_admin'):
         return redirect(url_for('login'))
 
-    nombre = request.form.get("nombre")
-    usuario = request.form.get("usuario") 
+    nombre   = request.form.get("nombre")
+    usuario  = request.form.get("usuario")
     password = request.form.get("password")
     telefono = request.form.get("telefono")
     es_admin = 1 if request.form.get("es_admin") else 0
-    foto = None
+    foto     = None
 
     if 'foto' in request.files:
         file = request.files['foto']
         if file and file.filename != "":
-            foto = secure_filename(file.filename)
-            file.save(os.path.join("static/img_peluqueros", foto))
+            filename = secure_filename(file.filename)
+            file.save(os.path.join("static/img_peluqueros", filename))
+            foto = f"/static/img_peluqueros/{filename}"
 
     conn = get_conn()
     c = conn.cursor()
-    c.execute("INSERT INTO peluqueros (nombre, usuario, password, es_admin, foto, telefono) VALUES (%s, %s, %s, %s, %s, %s)",
-              (nombre, usuario, password, es_admin, foto, telefono))
+
+    # ➤ Insertar peluquero
+    c.execute("""
+        INSERT INTO peluqueros (nombre, usuario, password, es_admin, foto, telefono)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING id
+    """, (nombre, usuario, password, es_admin, foto, telefono))
+    nuevo_id = c.fetchone()[0]
+
+    # ➤ Solo si NO es admin: crear horarios base 10:00–21:00 cada 40 min
+    if not es_admin:
+        dias = ['lunes','martes','miercoles','jueves','viernes','sabado','domingo']
+        hora_actual = datetime.strptime("10:00", "%H:%M")
+        fin = datetime.strptime("21:00", "%H:%M")
+
+        while hora_actual <= fin:
+            hora_str = hora_actual.strftime("%I:%M %p")
+            for d in dias:
+                c.execute(
+                    "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
+                    (nuevo_id, d, hora_str)
+                )
+            hora_actual += timedelta(minutes=40)
+
     conn.commit()
     conn.close()
 
