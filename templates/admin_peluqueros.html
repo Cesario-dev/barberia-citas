@@ -2,15 +2,15 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestionar Peluqueros</title>
+    <title>Gestionar Barberos</title>
 </head>
 <body>
-<h2>Gestionar Peluqueros</h2>
+<h2>Gestionar Barberos</h2>
 <a href="{{ url_for('admin_panel') }}">⬅ Volver al panel</a>
 
 <hr>
 
-<h3>Agregar nuevo peluquero</h3>
+<h3>Agregar nuevo barbero</h3>
 <form action="{{ url_for('agregar_peluquero') }}" method="POST" enctype="multipart/form-data">
     Nombre: <input type="text" name="nombre" required>
     Usuario: <input type="text" name="usuario" required>
@@ -23,7 +23,7 @@
 
 <hr>
 
-<h3>Lista de peluqueros</h3>
+<h3>Lista de barberos</h3>
 <table border="1" cellpadding="5">
     <tr>
         <th>Foto</th>
@@ -41,7 +41,7 @@
             {% endif %}
         </td>
         <td>{{ nombre }}</td>
-        <td>{{ "Admin" if es_admin else "Peluquero" }}</td>
+        <td>{{ "Admin" if es_admin else "Barbero" }}</td>
         <td>
             <form action="{{ url_for('editar_peluquero', id=id) }}" method="POST" enctype="multipart/form-data" style="display:inline-block;">
                 <input type="text" name="nombre" value="{{ nombre }}" required>
