@@ -703,7 +703,7 @@ def ver_calendario(peluquero_id):
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
-        bloqueados=bloqueados
+        bloqueados=bloqueados,
         es_admin=session.get("es_admin", False)
     )
 
