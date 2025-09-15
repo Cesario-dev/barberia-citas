@@ -51,13 +51,11 @@
     ⬅ Volver al panel
 </a>
 {% if es_admin %}
-    <form action="{{ url_for('liberar_citas', peluquero_id=peluquero_id) }}"
-          method="post"
-          style="margin: 20px 0;">
-        <button type="submit" class="btn-liberar">
-            Liberar todos los espacios (excepto fijos)
-        </button>
-    </form>
+    <form action="{{ url_for('liberar_todo', peluquero_id=peluquero_id) }}" method="post">
+    <button type="submit" class="btn-liberar">
+        🔓 Liberar todas las celdas (excepto fijadas y bloqueadas)
+    </button>
+</form>
 {% endif %}
 <table>
     <thead>
