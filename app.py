@@ -703,6 +703,7 @@ def gestionar_turno_global():
     accion = request.form.get("accion")
 
     dias_semana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+    dias_a_insertar = dias_semana if dia == "todos" else [dia]
 
     conn = get_conn()
     c = conn.cursor()
@@ -712,11 +713,6 @@ def gestionar_turno_global():
     peluqueros = [row[0] for row in c.fetchall()]
 
     if accion == "agregar":
-        # Insertar para todos los peluqueros no administradores
-        c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
-
-        dias_a_insertar = dias_semana if dia == "todos" else [dia]
-        
         for pid in peluqueros:
             for d in dias_a_insertar:     # ✅ usa d, no dia
                 try:
@@ -730,10 +726,11 @@ def gestionar_turno_global():
 
     elif accion == "eliminar":
         if dia == "todos":
-            c.execute(
-                "DELETE FROM horarios WHERE dia IN %s AND hora=%s",
-                (tuple(dias_semana), hora_norm)
-            )
+            for d in dias_semana:
+                c.execute(
+                    "DELETE FROM horarios WHERE dia=%s AND hora=%s",
+                    (d, hora_norm)
+                )
         else:
             c.execute(
                 "DELETE FROM horarios WHERE dia=%s AND hora=%s",
