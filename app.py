@@ -688,8 +688,8 @@ def liberar_citas(peluquero_id):
     conn.close()
     return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
 
-@app.route("/admin/agregar_turno_global", methods=["POST"])
-def agregar_turno_global():
+@app.route("/admin/gestionar_turno_global", methods=["POST"])
+def gestionar_turno_global():
     if 'peluquero_id' not in session or not session.get('es_admin'):
         return redirect(url_for('login'))
 
@@ -697,24 +697,29 @@ def agregar_turno_global():
     hora = request.form.get("hora")
     am_pm = request.form.get("am_pm")
     hora_completa = f"{hora} {am_pm}"
+    accion = request.form.get("accion")
 
     conn = get_conn()
     c = conn.cursor()
 
-    # obtén todos los peluqueros
-    c.execute("SELECT id FROM peluqueros WHERE es_admin=0")
-    todos = c.fetchall()
+    if accion == "agregar":
+        # Insertar para todos los peluqueros no administradores
+        c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
+        for (pid,) in c.fetchall():
+            try:
+                c.execute(
+                    "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
+                    (pid, dia, hora_completa)
+                )
+            except:
+                conn.rollback()  # ignora duplicados
+                continue
 
-    for (pid,) in todos:
-        try:
-            c.execute(
-                "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
-                (pid, dia, hora_completa)
-            )
-        except:
-            # si ya existe ese horario para ese peluquero, lo ignoramos
-            conn.rollback()
-            continue
+    elif accion == "eliminar":
+        c.execute("""
+            DELETE FROM horarios
+            WHERE dia=%s AND hora=%s
+        """, (dia, hora_completa))
 
     conn.commit()
     conn.close()
