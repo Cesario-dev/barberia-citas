@@ -80,7 +80,7 @@
                                   style="color: #25D366; text-decoration: none;">
                                   {{ ocupados[(dia, hora)]['telefono'] }}
                                 </a>
-                            { %endif% }
+                            {% endif %}
                             {% if es_admin %}
                                 <form action="{{ url_for('toggle_fijo', cita_id=ocupados[(dia, hora)]['id']) }}"
                                       method="post"
