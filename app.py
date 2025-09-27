@@ -530,7 +530,7 @@ def ver_calendario_admin(peluquero_id):
     if bloquear_dia and bloquear_hora:
         c.execute("""
             UPDATE horarios
-            SET bloqueado = 1
+            SET bloqueado = TRUE
             WHERE peluquero_id=%s AND dia=%s AND hora=%s
         """, (peluquero_id, bloquear_dia, bloquear_hora))
         conn.commit()
@@ -541,7 +541,7 @@ def ver_calendario_admin(peluquero_id):
     if reactivar_dia and reactivar_hora:
         c.execute("""
             UPDATE horarios
-            SET bloqueado = 0
+            SET bloqueado = FALSE
             WHERE peluquero_id=%s AND dia=%s AND hora=%s
         """, (peluquero_id, reactivar_dia, reactivar_hora))
         conn.commit()
@@ -571,7 +571,7 @@ def ver_calendario_admin(peluquero_id):
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado=0
+        WHERE peluquero_id=%s AND bloqueado=FALSE
     """, (peluquero_id,))
     disponibles = {(d, h) for d, h in c.fetchall()}
 
@@ -579,7 +579,7 @@ def ver_calendario_admin(peluquero_id):
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado=1
+        WHERE peluquero_id=%s AND bloqueado=TRUE
     """, (peluquero_id,))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
@@ -656,7 +656,7 @@ def ver_calendario(peluquero_id):
             c.execute(
                 adapt_query("""
                     UPDATE horarios
-                    SET bloqueado = 1
+                    SET bloqueado = TRUE
                     WHERE peluquero_id=%s AND dia=%s AND hora=%s
                 """),
                 (peluquero_id, bloquear_dia, bloquear_hora)
@@ -669,7 +669,7 @@ def ver_calendario(peluquero_id):
             c.execute(
                 adapt_query("""
                     UPDATE horarios
-                    SET bloqueado = 0
+                    SET bloqueado = FALSE
                     WHERE peluquero_id=%s AND dia=%s AND hora=%s
                 """),
                 (peluquero_id, activar_dia, activar_hora)
@@ -701,7 +701,7 @@ def ver_calendario(peluquero_id):
     c.execute(adapt_query("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado = 0
+        WHERE peluquero_id=%s AND bloqueado = FALSE
     """), (peluquero_id,))
     disponibles = {(d, h) for d, h in c.fetchall()}
 
@@ -720,7 +720,7 @@ def ver_calendario(peluquero_id):
     c.execute(adapt_query("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado = 1
+        WHERE peluquero_id=%s AND bloqueado = TRUE
     """), (peluquero_id,))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
