@@ -545,8 +545,6 @@ def ver_calendario_admin(peluquero_id):
             WHERE peluquero_id=%s AND dia=%s AND hora=%s
         """, (peluquero_id, reactivar_dia, reactivar_hora))
         conn.commit()
-        except:
-            pass  # si ya existe, ignorar
     
     # Datos del peluquero
     c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
