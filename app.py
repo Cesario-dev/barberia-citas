@@ -524,25 +524,30 @@ def ver_calendario_admin(peluquero_id):
                   (peluquero_id, cancelar_dia, cancelar_hora))
         conn.commit()
 
-    # ✅ Bloquear horario
+       # ✅ Bloquear horario (marcar como bloqueado)
     bloquear_dia = request.args.get('bloquear_dia')
     bloquear_hora = request.args.get('bloquear_hora')
     if bloquear_dia and bloquear_hora:
-        c.execute("DELETE FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s",
-                  (peluquero_id, bloquear_dia, bloquear_hora))
+        c.execute("""
+            UPDATE horarios
+            SET bloqueado = 1
+            WHERE peluquero_id=%s AND dia=%s AND hora=%s
+        """, (peluquero_id, bloquear_dia, bloquear_hora))
         conn.commit()
-
-    # ✅ Reactivar horario
+    
+    # ✅ Reactivar horario (quitar el bloqueo)
     reactivar_dia = request.args.get('reactivar_dia')
     reactivar_hora = request.args.get('reactivar_hora')
     if reactivar_dia and reactivar_hora:
-        try:
-            c.execute("INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
-                      (peluquero_id, reactivar_dia, reactivar_hora))
-            conn.commit()
+        c.execute("""
+            UPDATE horarios
+            SET bloqueado = 0
+            WHERE peluquero_id=%s AND dia=%s AND hora=%s
+        """, (peluquero_id, reactivar_dia, reactivar_hora))
+        conn.commit()
         except:
             pass  # si ya existe, ignorar
-
+    
     # Datos del peluquero
     c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
     peluquero = c.fetchone()
@@ -564,9 +569,21 @@ def ver_calendario_admin(peluquero_id):
         key=lambda h: datetime.strptime(h, "%I:%M %p")
     )
 
-    # Disponibles
-    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=%s", (peluquero_id,))
-    disponibles = {(row[0], row[1]) for row in c.fetchall()}
+    # Solo horarios NO bloqueados
+    c.execute("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado=0
+    """, (peluquero_id,))
+    disponibles = {(d, h) for d, h in c.fetchall()}
+
+    # Horarios bloqueados
+    c.execute("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado=1
+    """, (peluquero_id,))
+    bloqueados = {(d, h) for d, h in c.fetchall()}
 
     # Ocupados
     c.execute("""
@@ -619,24 +636,31 @@ def ver_calendario(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    # Cancelar cita solo si es admin
+    # ✅ Cancelar cita solo si es admin
     if session.get("es_admin"):
         cancelar_dia = request.args.get("cancelar_dia")
         cancelar_hora = request.args.get("cancelar_hora")
         if cancelar_dia and cancelar_hora:
             c.execute(
-                adapt_query("DELETE FROM citas WHERE peluquero_id=%s AND dia=%s AND hora=%s"),
+                adapt_query("""
+                    DELETE FROM citas
+                    WHERE peluquero_id=%s AND dia=%s AND hora=%s
+                """),
                 (peluquero_id, cancelar_dia, cancelar_hora)
             )
             conn.commit()
 
-    # Bloquear/activar horarios (solo admin)
+    # ✅ Bloquear / Reactivar (solo admin) usando la columna 'bloqueado'
     if session.get("es_admin"):
         bloquear_dia = request.args.get("bloquear_dia")
         bloquear_hora = request.args.get("bloquear_hora")
         if bloquear_dia and bloquear_hora:
             c.execute(
-                adapt_query("DELETE FROM horarios WHERE peluquero_id=%s AND dia=%s AND hora=%s"),
+                adapt_query("""
+                    UPDATE horarios
+                    SET bloqueado = 1
+                    WHERE peluquero_id=%s AND dia=%s AND hora=%s
+                """),
                 (peluquero_id, bloquear_dia, bloquear_hora)
             )
             conn.commit()
@@ -645,55 +669,64 @@ def ver_calendario(peluquero_id):
         activar_hora = request.args.get("activar_hora")
         if activar_dia and activar_hora:
             c.execute(
-                adapt_query(
-                    "INSERT OR IGNORE INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)"
-                ),
+                adapt_query("""
+                    UPDATE horarios
+                    SET bloqueado = 0
+                    WHERE peluquero_id=%s AND dia=%s AND hora=%s
+                """),
                 (peluquero_id, activar_dia, activar_hora)
             )
             conn.commit()
 
-    # Obtener nombre peluquero
+    # ✅ Obtener nombre del peluquero
     c.execute(adapt_query("SELECT nombre FROM peluqueros WHERE id=%s"), (peluquero_id,))
-    peluquero = c.fetchone()
-    if not peluquero:
+    row = c.fetchone()
+    if not row:
         conn.close()
         return "Peluquero no encontrado"
-    nombre = peluquero[0]
+    nombre = row[0]
 
     dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
 
-    # ✅ Obtener solo las horas que realmente existan en la DB
+    # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
         UNION
         SELECT DISTINCT hora FROM citas    WHERE peluquero_id=%s
     """), (peluquero_id, peluquero_id))
     horas = sorted(
-        {row[0] for row in c.fetchall()},
+        {h for (h,) in c.fetchall()},
         key=lambda h: datetime.strptime(h, "%I:%M %p")
     )
 
-    # Disponibles
-    c.execute(adapt_query("SELECT dia, hora FROM horarios WHERE peluquero_id=%s"), (peluquero_id,))
-    disponibles = {(row[0], row[1]) for row in c.fetchall()}
+    # ✅ Disponibles: solo los NO bloqueados
+    c.execute(adapt_query("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado = 0
+    """), (peluquero_id,))
+    disponibles = {(d, h) for d, h in c.fetchall()}
 
-    # Ocupados
-    c.execute(
-        adapt_query("SELECT dia, hora, nombre, telefono FROM citas WHERE peluquero_id=%s"),
-        (peluquero_id,)
-    )
+    # ✅ Ocupados
+    c.execute(adapt_query("""
+        SELECT dia, hora, nombre, telefono
+        FROM citas
+        WHERE peluquero_id=%s
+    """), (peluquero_id,))
     ocupados = {
-        (row[0], row[1]): {"nombre": row[2], "telefono": row[3]}
-        for row in c.fetchall()
+        (d, h): {"nombre": n, "telefono": t}
+        for d, h, n, t in c.fetchall()
     }
 
-    conn.close()
+    # ✅ Bloqueados: solo los que están marcados como bloqueados
+    c.execute(adapt_query("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado = 1
+    """), (peluquero_id,))
+    bloqueados = {(d, h) for d, h in c.fetchall()}
 
-    # ✅ Bloqueados: solo las combinaciones que existan en DB
-    bloqueados = set(
-        (d, h) for d in dias for h in horas
-        if (d, h) not in disponibles and (d, h) not in ocupados
-    )
+    conn.close()
 
     return render_template(
         "calendario.html",
