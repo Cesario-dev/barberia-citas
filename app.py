@@ -602,12 +602,6 @@ def ver_calendario_admin(peluquero_id):
 
     conn.close()
 
-    # 🔹 Bloqueados: solo las celdas que existan en la DB
-    #    (es decir, horas presentes en 'horas', pero no en disponibles ni ocupados)
-    bloqueados = set(
-        (d, h) for d in dias for h in horas
-        if (d, h) not in disponibles and (d, h) not in ocupados
-    )
 
     return render_template(
         "calendario.html",
