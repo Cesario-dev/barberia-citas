@@ -664,17 +664,15 @@ def ver_calendario(peluquero_id):
             )
             conn.commit()
 
-        activar_dia = request.args.get("activar_dia")
-        activar_hora = request.args.get("activar_hora")
-        if activar_dia and activar_hora:
-            c.execute(
-                adapt_query("""
-                    UPDATE horarios
-                    SET bloqueado = FALSE
-                    WHERE peluquero_id=%s AND dia=%s AND hora=%s
-                """),
-                (peluquero_id, activar_dia, activar_hora)
-            )
+        reactivar_dia = request.args.get('reactivar_dia')
+        reactivar_hora = request.args.get('reactivar_hora')
+        if reactivar_dia and reactivar_hora:
+            c.execute("""
+                INSERT INTO horarios (peluquero_id, dia, hora, bloqueado)
+                VALUES (%s, %s, %s, FALSE)
+                ON CONFLICT (peluquero_id, dia, hora)
+                DO UPDATE SET bloqueado = FALSE;
+            """, (peluquero_id, reactivar_dia, reactivar_hora))
             conn.commit()
 
     # ✅ Obtener nombre del peluquero
