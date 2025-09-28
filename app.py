@@ -536,8 +536,8 @@ def ver_calendario_admin(peluquero_id):
         conn.commit()
     
     # ✅ Reactivar horario (quitar el bloqueo)
-    activar_dia = request.args.get("activar_dia")
-    activar_hora = request.args.get("activar_hora")
+    activar_dia = request.args.get("activar_dia") or request.args.get("reactivar_dia")
+    activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     if activar_dia and activar_hora:
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, bloqueado)
