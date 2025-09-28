@@ -759,32 +759,28 @@ def liberar_todo(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    # 1️⃣  Guardar los horarios de las citas no fijas ANTES de borrarlas
+    # 1️⃣ Guardar los horarios de las citas NO fijas
     c.execute("""
         SELECT dia, hora
         FROM citas
         WHERE peluquero_id = %s AND (fijo IS NULL OR fijo = FALSE)
     """, (peluquero_id,))
-    horarios_a_liberar = c.fetchall()   # lista de tuplas (dia, hora)
+    horarios_a_liberar = c.fetchall()   # [(dia, hora), ...]
 
-    # 2️⃣  Eliminar esas citas
+    # 2️⃣ Eliminar esas citas
     c.execute("""
         DELETE FROM citas
         WHERE peluquero_id = %s AND (fijo IS NULL OR fijo = FALSE)
     """, (peluquero_id,))
 
-    # 3️⃣  Volver a insertar SOLO en horarios los huecos que
-    #     a) acaban de quedar libres y
-    #     b) NO estén ya disponibles (para evitar duplicados)
+    # 3️⃣ Marcar esos horarios como disponibles (bloqueado = FALSE)
+    #     Solo si la fila ya existe en horarios
     for dia, hora in horarios_a_liberar:
         c.execute("""
-            INSERT INTO horarios (peluquero_id, dia, hora)
-            SELECT %s, %s, %s
-            WHERE NOT EXISTS (
-                SELECT 1 FROM horarios
-                WHERE peluquero_id = %s AND dia = %s AND hora = %s
-            )
-        """, (peluquero_id, dia, hora, peluquero_id, dia, hora))
+            UPDATE horarios
+            SET bloqueado = FALSE
+            WHERE peluquero_id = %s AND dia = %s AND hora = %s
+        """, (peluquero_id, dia, hora))
 
     conn.commit()
     conn.close()
