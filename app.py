@@ -789,57 +789,54 @@ def liberar_todo(peluquero_id):
 
 @app.route("/admin/gestionar_turno_global", methods=["POST"])
 def gestionar_turno_global():
-    if 'peluquero_id' not in session or not session.get('es_admin'):
-        return redirect(url_for('login'))
+    if "peluquero_id" not in session or not session.get("es_admin"):
+        return redirect(url_for("login"))
 
     dia = request.form.get("dia").lower()
-    hora = request.form.get("hora")          # viene como '08:40' o '8:40'
-    am_pm = request.form.get("am_pm")        # 'AM' o 'PM'
+    hora = request.form.get("hora")      # ej: '08:40'
+    am_pm = request.form.get("am_pm")    # 'AM' o 'PM'
+    accion = request.form.get("accion")  # 'agregar' o 'eliminar'
 
-    # ✅ Normalizar a formato %I:%M %p (ej: "08:40 PM")
+    # Normalizar a formato %I:%M %p (ej: "08:40 PM")
+    from datetime import datetime
     hora_norm = datetime.strptime(f"{hora} {am_pm}", "%I:%M %p").strftime("%I:%M %p")
 
-    accion = request.form.get("accion")
-
-    dias_semana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
-    dias_a_insertar = dias_semana if dia == "todos" else [dia]
+    # Si el admin eligió “TODOS” los días, usar toda la semana
+    dias_semana = ["lunes", "martes", "miercoles", "jueves",
+                   "viernes", "sabado", "domingo"]
+    dias_a_usar = dias_semana if dia == "todos" else [dia]
 
     conn = get_conn()
     c = conn.cursor()
 
-     # ✅ Obtener peluqueros NO administradores una sola vez
+    # Obtener todos los peluqueros que NO son administradores
     c.execute("SELECT id FROM peluqueros WHERE es_admin = 0")
     peluqueros = [row[0] for row in c.fetchall()]
 
     if accion == "agregar":
+        # Inserta el turno para todos los barberos (reactiva si existía y estaba bloqueado)
         for pid in peluqueros:
-            for d in dias_a_insertar:     # ✅ usa d, no dia
-                try:
-                    c.execute(
-                        "INSERT INTO horarios (peluquero_id, dia, hora) VALUES (%s, %s, %s)",
-                        (pid, d, hora_norm)
-                    )
-                except:
-                    conn.rollback()
-                    continue
+            for d in dias_a_usar:
+                c.execute("""
+                    INSERT INTO horarios (peluquero_id, dia, hora, bloqueado)
+                    VALUES (%s, %s, %s, FALSE)
+                    ON CONFLICT (peluquero_id, dia, hora)
+                    DO UPDATE SET bloqueado = FALSE
+                """, (pid, d, hora_norm))
 
     elif accion == "eliminar":
-        if dia == "todos":
-            for d in dias_semana:
-                c.execute(
-                    "DELETE FROM horarios WHERE dia=%s AND hora=%s",
-                    (d, hora_norm)
-                )
-        else:
-            c.execute(
-                "DELETE FROM horarios WHERE dia=%s AND hora=%s",
-                (dia, hora_norm)
-            )
+        # Borra por completo la fila de cada barbero
+        for pid in peluqueros:
+            for d in dias_a_usar:
+                c.execute("""
+                    DELETE FROM horarios
+                    WHERE peluquero_id = %s AND dia = %s AND hora = %s
+                """, (pid, d, hora_norm))
 
     conn.commit()
     conn.close()
 
-    return redirect(url_for('admin_panel'))  # o a la página de admin que prefieras
+    return redirect(url_for("admin_panel"))
 
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
