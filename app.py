@@ -277,26 +277,37 @@ def calendario_cliente(peluquero_id):
 
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
-    # 🔹 Obtener solo las horas que realmente existen en la DB
+    # Horas realmente existentes
     c.execute("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
         UNION
-        SELECT DISTINCT hora FROM citas    WHERE peluquero_id=%s
+        SELECT DISTINCT hora FROM citas WHERE peluquero_id=%s
     """, (peluquero_id, peluquero_id))
-    horas = sorted(
-        {row[0] for row in c.fetchall()},
-        key=lambda h: datetime.strptime(h, "%I:%M %p")
-    )
-
-    # Horarios disponibles
-    c.execute("SELECT dia, hora FROM horarios WHERE peluquero_id=%s", (peluquero_id,))
-    disponibles = {(row[0], row[1]) for row in c.fetchall()}
-
-    # Citas ocupadas
-    c.execute("SELECT dia, hora, nombre FROM citas WHERE peluquero_id=%s", (peluquero_id,))
-    ocupados = {(row[0], row[1]): row[2] for row in c.fetchall()}
-
-    conn.close()
+    horas = sorted({h for (h,) in c.fetchall()}, key=lambda h: datetime.strptime(h, "%I:%M %p"))
+    
+    # Disponibles = solo los NO bloqueados
+    c.execute("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado = FALSE
+    """, (peluquero_id,))
+    disponibles = {(d, h) for d, h in c.fetchall()}
+    
+    # Ocupados (citas)
+    c.execute("""
+        SELECT dia, hora, nombre
+        FROM citas
+        WHERE peluquero_id=%s
+    """, (peluquero_id,))
+    ocupados = {(d, h): n for d, h, n in c.fetchall()}
+    
+    # 🔹 Bloqueados = los que están marcados como bloqueados
+    c.execute("""
+        SELECT dia, hora
+        FROM horarios
+        WHERE peluquero_id=%s AND bloqueado = TRUE
+    """, (peluquero_id,))
+    bloqueados = {(d, h) for d, h in c.fetchall()}
 
     return render_template(
         "cliente_calendario.html",
@@ -305,7 +316,8 @@ def calendario_cliente(peluquero_id):
         dias=dias,
         horas=horas,
         disponibles=disponibles,
-        ocupados=ocupados
+        ocupados=ocupados,
+        bloqueados=bloqueados
     )
 
 @app.route("/admin")
