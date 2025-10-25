@@ -224,7 +224,7 @@ def agendar():
         client = Client(account_sid, auth_token)
 
         # Cambia este número si quieres que el mensaje llegue al barbero
-        to_number = f"whatsapp:{telefono}"
+        to_number = f"whatsapp:+573105126815"
 
         mensaje = (
             f"📅 *Cita confirmada*\n\n"
