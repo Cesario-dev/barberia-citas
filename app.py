@@ -223,24 +223,36 @@ def agendar():
 
         client = Client(account_sid, auth_token)
 
-        # Cambia este número si quieres que el mensaje llegue al barbero
-        to_number = f"whatsapp:+573105126815"
+        # 🔹 Obtener el número del barbero
+        conn_p = get_conn()
+        c_p = conn_p.cursor()
+        c_p.execute("SELECT telefono FROM peluqueros WHERE id=%s", (peluquero_id,))
+        result = c_p.fetchone()
+        conn_p.close()
 
-        mensaje = (
-            f"📅 *Cita confirmada*\n\n"
-            f"👤 Cliente: {nombre}\n"
-            f"💈 Peluquero: {nombre_peluquero}\n"
-            f"🗓 Día: {dia}\n"
-            f"🕒 Hora: {hora}\n\n"
-            f"Si deseas cancelar o modificar tu cita, contáctanos por este medio."
-        )
+        if result and result[0]:
+            telefono_barbero = result[0]
+            to_number = f"whatsapp:{telefono_barbero}"
 
-        client.messages.create(
-            from_=from_whatsapp,
-            to=to_number,
-            body=mensaje
-        )
-        
+            mensaje = (
+                f"💈 *Nueva cita agendada*\n\n"
+                f"👤 Cliente: {nombre}\n"
+                f"📞 Teléfono: {telefono}\n"
+                f"🗓 Día: {dia}\n"
+                f"🕒 Hora: {hora}\n\n"
+                f"Por favor revisa tu calendario desde el panel de administración."
+            )
+
+            msg = client.messages.create(
+                from_=from_whatsapp,
+                to=to_number,
+                body=mensaje
+            )
+            print(f"✅ WhatsApp enviado con SID: {msg.sid}")
+
+        else:
+            print(f"⚠️ Peluquero {peluquero_id} sin número registrado.")
+
     except Exception as e:
         print(f"❌ Error enviando WhatsApp: {e}")
 
