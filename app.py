@@ -5,6 +5,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
+from twilio.rest import Client
+
+ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_WHATSAPP = os.getenv("TWILIO_WHATSAPP_NUMBER")
 
 # 📂 Asegurar carpeta de imágenes
 UPLOAD_FOLDER = os.path.join("static", "img_peluqueros")
@@ -73,6 +78,19 @@ def init_schema():
 
 
 # ---------- FUNCIONES ----------
+
+def enviar_notificacion_whatsapp(destinatario, mensaje):
+    client = Client(ACCOUNT_SID, AUTH_TOKEN)
+    try:
+        client.messages.create(
+            from_=TWILIO_WHATSAPP,
+            to=f"whatsapp:{destinatario}",  # Ejemplo: whatsapp:+573001234567
+            body=mensaje
+        )
+        print(f"✅ WhatsApp enviado a {destinatario}")
+    except Exception as e:
+        print(f"⚠️ Error enviando WhatsApp: {e}")
+        
 def cargar_horarios_40_minutos(peluquero_id):
     if not peluquero_id:
         return
@@ -194,6 +212,34 @@ def agendar():
     )
     conn.commit()
     conn.close()
+
+     # ==============================
+    # ✅ Enviar notificación WhatsApp
+    # ==============================
+    try:
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+        from_whatsapp = os.getenv("TWILIO_WHATSAPP_NUMBER")
+
+        client = Client(account_sid, auth_token)
+
+        # Cambia este número si quieres que el mensaje llegue al barbero
+        to_number = f"whatsapp:{telefono}"
+
+        mensaje = (
+            f"📅 *Cita confirmada*\n\n"
+            f"👤 Cliente: {nombre}\n"
+            f"💈 Peluquero: {nombre_peluquero}\n"
+            f"🗓 Día: {dia}\n"
+            f"🕒 Hora: {hora}\n\n"
+            f"Si deseas cancelar o modificar tu cita, contáctanos por este medio."
+        )
+
+        client.messages.create(
+            from_=from_whatsapp,
+            to=to_number,
+            body=mensaje
+        )
 
     return {"success": True,
             "message": (
