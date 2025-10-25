@@ -240,6 +240,9 @@ def agendar():
             to=to_number,
             body=mensaje
         )
+        
+    except Exception as e:
+        print(f"❌ Error enviando WhatsApp: {e}")
 
     return {"success": True,
             "message": (
