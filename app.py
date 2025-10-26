@@ -237,7 +237,6 @@ def agendar():
             mensaje = (
                 f"💈 *Nueva cita agendada*\n\n"
                 f"👤 Cliente: {nombre}\n"
-                f"📞 Teléfono: {telefono}\n"
                 f"🗓 Día: {dia}\n"
                 f"🕒 Hora: {hora}\n\n"
                 f"Por favor revisa tu calendario desde el panel de administración."
