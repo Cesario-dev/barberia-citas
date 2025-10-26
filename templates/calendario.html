@@ -102,6 +102,12 @@
                     <td class="disponible">
                         {% if es_admin %}
                             <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora) }}">🚫 Bloquear</a>
+                            <button type="button" class="btn-agendar"
+                                data-peluquero="{{ peluquero_id }}"
+                                data-dia="{{ dia }}"
+                                data-hora="{{ hora }}">
+                                Agendar
+                            </button>
                         {% else %}
                             Disponible
                         {% endif %}
@@ -123,5 +129,75 @@
     </tbody>
 </table>
 
+
+<div id="modal">
+    <div id="modal-content">
+        <h3>Agendar cita</h3>
+        <form id="agendar-form" onsubmit="return false;">
+            <input type="hidden" name="peluquero_id" id="peluquero_id">
+            <input type="hidden" name="dia" id="dia">
+            <input type="hidden" name="hora" id="hora">
+
+            <label>Nombre:</label>
+            <input type="text" name="nombre" required><br><br>
+            <label>Whatsapp:</label>
+            <input type="text" name="telefono" required><br><br>
+
+            <button type="submit">Confirmar</button>
+            <button type="button" id="cancelar">Cancelar</button>
+        </form>
+        <button type="button" id="cerrar">Cerrar</button>
+        
+        <p id="confirm-msg" style="color:black; margin-top:15px; display:none;"></p>
+    </div>
+</div>
+
+<script>
+function validarFormulario() {
+    const dia = document.getElementById('dia').value;
+    const hora = document.getElementById('hora').value;
+    if (!dia || !hora) {
+        alert("Por favor selecciona un horario antes de agendar.");
+        return false;
+    }
+    return true;
+}
+
+document.querySelectorAll('.btn-agendar').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('peluquero_id').value = this.dataset.peluquero;
+        document.getElementById('dia').value = this.dataset.dia;
+        document.getElementById('hora').value = this.dataset.hora;
+        document.getElementById('modal').style.display = 'flex';
+    });
+});
+
+document.getElementById('cancelar').addEventListener('click', function() {
+    document.getElementById('modal').style.display = 'none';
+});
+</script>
+<script>
+document.getElementById('agendar-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const resp = await fetch("{{ url_for('agendar') }}", {
+        method: 'POST',
+        body: formData
+    });
+
+    const data = await resp.json();
+    if (data.success) {
+        // Oculta los inputs y muestra mensaje
+        this.style.display = 'none';
+        const msg = document.getElementById('confirm-msg');
+        msg.textContent = data.message;
+        msg.style.display = 'block';
+    } else {
+        alert(data.message || "Error al agendar");
+    }
+});
+
+</script>
 </body>
 </html>
