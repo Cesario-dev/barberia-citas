@@ -177,7 +177,7 @@
 </table>
 
 
-<div id="modal">
+<div id="modal" style="display:none;">
     <div id="modal-content">
         <h3>Agendar cita</h3>
         <form id="agendar-form" onsubmit="return false;">
@@ -200,18 +200,10 @@
 </div>
 
 <script>
-function validarFormulario() {
-    const dia = document.getElementById('dia').value;
-    const hora = document.getElementById('hora').value;
-    if (!dia || !hora) {
-        alert("Por favor selecciona un horario antes de agendar.");
-        return false;
-    }
-    return true;
-}
-
+// Mostrar modal con datos del turno
 document.querySelectorAll('.btn-agendar').forEach(btn => {
     btn.addEventListener('click', function() {
+        console.log("🟢 Botón Agendar clicado"); // 👈 verifica en consola
         document.getElementById('peluquero_id').value = this.dataset.peluquero;
         document.getElementById('dia').value = this.dataset.dia;
         document.getElementById('hora').value = this.dataset.hora;
@@ -219,13 +211,18 @@ document.querySelectorAll('.btn-agendar').forEach(btn => {
     });
 });
 
-document.getElementById('cancelar').addEventListener('click', function() {
+// Cerrar modal
+document.getElementById('cancelar').addEventListener('click', () => {
     document.getElementById('modal').style.display = 'none';
 });
-</script>
-<script>
+document.getElementById('cerrar').addEventListener('click', () => {
+    document.getElementById('modal').style.display = 'none';
+});
+
+// Enviar formulario
 document.getElementById('agendar-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+    console.log("📤 Enviando cita..."); // 👈 verifica si llega acá
 
     const formData = new FormData(this);
     const resp = await fetch("{{ url_for('agendar') }}", {
@@ -234,17 +231,18 @@ document.getElementById('agendar-form').addEventListener('submit', async functio
     });
 
     const data = await resp.json();
+    console.log("📩 Respuesta:", data); // 👈 mira si llega respuesta
+
     if (data.success) {
-        // Oculta los inputs y muestra mensaje
         this.style.display = 'none';
         const msg = document.getElementById('confirm-msg');
         msg.textContent = data.message;
         msg.style.display = 'block';
+        setTimeout(() => location.reload(), 2500);
     } else {
         alert(data.message || "Error al agendar");
     }
 });
-
 </script>
 </body>
 </html>
