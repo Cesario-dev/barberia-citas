@@ -42,6 +42,53 @@
         a:hover {
             background: #555;
         }
+        /* Estilo modal */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        #modal-content label {
+        color: black;
+        }
+        #modal-content input {
+            color: black; /* para el texto que escribe el usuario */
+        }
+        #cerrar {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: #e6b800;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            cursor: pointer;
+        }
+        #cerrar:hover {
+            background: #ffcc00;
+        }
+        .btn-agendar {
+            background: #333;
+            color: white;
+        }
+        #confirm-msg {
+            white-space: pre-line;
+        }
+        .hora-label {
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 4px; /* espacio entre hora y botón */
+            display: block;
+        }
     </style>
 </head>
 <body>
