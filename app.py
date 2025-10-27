@@ -6,6 +6,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from twilio.rest import Client
+from zoneinfo import Zoneinfo
+
+# --- zona horaria: America/Bogota
+tz = ZoneInfo("America/Bogota")
+ahora = datetime.now(tz)
 
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
@@ -98,6 +103,7 @@ def cargar_horarios_40_minutos(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
     try:
+        
         dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
         hora_actual = datetime.strptime("10:00", "%H:%M")
         fin = datetime.strptime("21:00", "%H:%M")
@@ -335,7 +341,20 @@ def calendario_cliente(peluquero_id):
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
+    # inicio de la semana: lunes de la semana actual (independiente del día actual)
+    # .weekday(): 0 = lunes ... 6 = domingo
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+
+
+    dias_con_fechas = {
+        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        for i, d in enumerate(dias)
+    }
 
     # Horas realmente existentes
     c.execute("""
@@ -374,6 +393,7 @@ def calendario_cliente(peluquero_id):
         peluquero_id=peluquero_id,
         nombre_peluquero=nombre_peluquero,
         dias=dias,
+        dias_con_fechas=dias_con_fechas,
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
@@ -627,7 +647,19 @@ def ver_calendario_admin(peluquero_id):
         return "Peluquero no encontrado"
     nombre = peluquero[0]
 
+    # inicio de la semana: lunes de la semana actual (independiente del día actual)
+    # .weekday(): 0 = lunes ... 6 = domingo
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+
+    dias_con_fechas = {
+        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        for i, d in enumerate(dias)
+    }
 
     # 🔹 Obtener solo las horas que realmente existan en la DB (horarios o citas)
     c.execute("""
@@ -680,6 +712,7 @@ def ver_calendario_admin(peluquero_id):
         nombre=nombre,
         peluquero_id=peluquero_id,
         dias=dias,
+        dias_con_fechas=dias_con_fechas,
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
@@ -749,7 +782,20 @@ def ver_calendario(peluquero_id):
         return "Peluquero no encontrado"
     nombre = row[0]
 
+    # inicio de la semana: lunes de la semana actual (independiente del día actual)
+    # .weekday(): 0 = lunes ... 6 = domingo
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+
+
     dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+
+    dias_con_fechas = {
+        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        for i, d in enumerate(dias)
+    }
 
     # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
@@ -796,6 +842,7 @@ def ver_calendario(peluquero_id):
         nombre=nombre,
         peluquero_id=peluquero_id,
         dias=dias,
+        dias_con_fechas=dias_con_fechas,
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
