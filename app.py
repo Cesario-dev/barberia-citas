@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 from twilio.rest import Client
-from zoneinfo import Zoneinfo
+from zoneinfo import ZoneInfo
 
 # --- zona horaria: America/Bogota
 tz = ZoneInfo("America/Bogota")
