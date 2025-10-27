@@ -109,7 +109,10 @@
         <tr>
             <th>Hora / Día</th>
             {% for dia in dias %}
-                <th>{{ dia }}</th>
+                <th style="text-transform:uppercase; font-weight:bold;">
+                    {{ dia|capitalize }}<br>
+                    <span style="font-size:0.9em;">{{ dias_con_fechas[dia] }}</span>
+                </th>
             {% endfor %}
         </tr>
     </thead>
