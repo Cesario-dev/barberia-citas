@@ -352,7 +352,7 @@ def calendario_cliente(peluquero_id):
 
 
     dias_con_fechas = {
-        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
         for i, d in enumerate(dias)
     }
 
@@ -657,7 +657,7 @@ def ver_calendario_admin(peluquero_id):
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
     dias_con_fechas = {
-        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
         for i, d in enumerate(dias)
     }
 
@@ -793,7 +793,7 @@ def ver_calendario(peluquero_id):
     dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
 
     dias_con_fechas = {
-        d: (inicio_semana + timedelta(days=i)).strftime("%d")  # "27", "28", etc.
+        d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
         for i, d in enumerate(dias)
     }
 
