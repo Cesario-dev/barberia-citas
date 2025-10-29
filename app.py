@@ -1007,7 +1007,7 @@ def enviar_recordatorios():
                         from_whatsapp = os.getenv("TWILIO_WHATSAPP_NUMBER")
 
                         client = Client(account_sid, auth_token)
-                        to_number = f"whatsapp:{telefono}"
+                        to_number = f"whatsapp:+57{telefono}"
 
                         mensaje = (
                             f"⏰ *Recordatorio de cita*\n\n"
