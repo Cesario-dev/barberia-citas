@@ -1,6 +1,8 @@
 import os
 import psycopg2
 import sqlite3
+import time
+import threading
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -956,6 +958,89 @@ def gestionar_turno_global():
     conn.close()
 
     return redirect(url_for("admin_panel"))
+
+def enviar_recordatorios():
+    while True:
+        try:
+            conn = get_conn()
+            c = conn.cursor()
+
+            # Hora actual
+            ahora = datetime.now()
+
+            # Buscamos citas dentro de la próxima hora que aún no tengan recordatorio enviado
+            c.execute("""
+                SELECT id, nombre, telefono, dia, hora, peluquero_id
+                FROM citas
+                WHERE recordatorio_enviado = FALSE
+            """)
+            citas = c.fetchall()
+
+            for id_cita, nombre, telefono, dia, hora, peluquero_id in citas:
+                try:
+                    # Convertir hora de texto ("02:00 PM") a datetime de hoy
+                    hora_cita = datetime.strptime(hora, "%I:%M %p")
+
+                    # Obtener el próximo día correspondiente (ej: lunes → fecha exacta)
+                    from zoneinfo import ZoneInfo
+                    tz = ZoneInfo("America/Bogota")
+                    ahora_local = ahora.astimezone(tz)
+
+                    # Saltar si ya pasó la cita
+                    if hora_cita.hour < ahora_local.hour - 1:
+                        continue
+
+                    # Diferencia de tiempo
+                    diferencia = abs((hora_cita.hour - ahora_local.hour) * 60 + (hora_cita.minute - ahora_local.minute))
+
+                    if diferencia <= 60:  # dentro de una hora
+                        # Obtener el nombre del peluquero
+                        c2 = conn.cursor()
+                        c2.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
+                        row = c2.fetchone()
+                        nombre_peluquero = row[0] if row else "tu barbero"
+                        c2.close()
+
+                        # Enviar mensaje
+                        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+                        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+                        from_whatsapp = os.getenv("TWILIO_WHATSAPP_NUMBER")
+
+                        client = Client(account_sid, auth_token)
+                        to_number = f"whatsapp:{telefono}"
+
+                        mensaje = (
+                            f"⏰ *Recordatorio de cita*\n\n"
+                            f"Hola {nombre}, te recordamos tu cita con *{nombre_peluquero}* "
+                            f"programada para hoy a las *{hora}*.\n\n"
+                            f"💈 ¡Te esperamos en la barbería!"
+                        )
+
+                        client.messages.create(
+                            from_=from_whatsapp,
+                            to=to_number,
+                            body=mensaje
+                        )
+
+                        # Marcar como recordatorio enviado
+                        c.execute("UPDATE citas SET recordatorio_enviado = TRUE WHERE id=%s", (id_cita,))
+                        conn.commit()
+
+                        print(f"✅ Recordatorio enviado a {nombre} ({telefono})")
+
+                except Exception as e:
+                    print(f"⚠️ Error procesando cita {id_cita}: {e}")
+
+            conn.close()
+
+        except Exception as e:
+            print(f"❌ Error en tarea de recordatorios: {e}")
+
+        # Esperar 5 minutos antes de revisar de nuevo
+        time.sleep(300)
+
+# Iniciar hilo en segundo plano para enviar recordatorios
+threading.Thread(target=enviar_recordatorios, daemon=True).start()
 
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
