@@ -1010,10 +1010,10 @@ def enviar_recordatorios():
                         to_number = f"whatsapp:+57{telefono}"
 
                         mensaje = (
-                            f"⏰ *Recordatorio de cita*\n\n"
+                            f"⏰ *Recuerda tu cita*\n\n"
                             f"Hola {nombre}, te recordamos tu cita con *{nombre_peluquero}* "
                             f"programada para hoy a las *{hora}*.\n\n"
-                            f"💈 ¡Te esperamos en la barbería!"
+                            f"💈 ¡Te esperamos en VIP BARBER TOP!"
                         )
 
                         client.messages.create(
