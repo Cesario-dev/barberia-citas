@@ -726,6 +726,30 @@ def ver_calendario_admin(peluquero_id):
         es_admin=True
     )
 
+@app.route("/admin/peluquero/<int:peluquero_id>/bloquear_dia_completo", methods=["POST"])
+def bloquear_dia_completo(peluquero_id):
+    if 'peluquero_id' not in session or not session.get('es_admin'):
+        return redirect(url_for('login'))
+
+    dia = request.form.get("dia")
+    if not dia:
+        return "Día no especificado", 400
+
+    conn = get_conn()
+    c = conn.cursor()
+
+    # ✅ Bloquear todas las horas disponibles de ese día (sin tocar las citas existentes)
+    c.execute("""
+        UPDATE horarios
+        SET bloqueado = TRUE
+        WHERE peluquero_id = %s AND dia = %s
+    """, (peluquero_id, dia))
+
+    conn.commit()
+    conn.close()
+
+    flash(f"Se han bloqueado todos los horarios del día {dia}.", "success")
+    return redirect(url_for('ver_calendario_admin', peluquero_id=peluquero_id))
 
 @app.route("/admin/<int:peluquero_id>/calendario")
 def ver_calendario(peluquero_id):
