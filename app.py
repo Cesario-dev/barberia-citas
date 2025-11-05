@@ -343,6 +343,8 @@ def calendario_cliente(peluquero_id):
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
+    ahora = datetime.now(tz)
+
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
     inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
@@ -649,6 +651,8 @@ def ver_calendario_admin(peluquero_id):
         return "Peluquero no encontrado"
     nombre = peluquero[0]
 
+    ahora = datetime.now(tz)
+
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
     inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
@@ -783,6 +787,7 @@ def ver_calendario(peluquero_id):
         conn.close()
         return "Peluquero no encontrado"
     nombre = row[0]
+    ahora = datetime.now(tz)
 
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
