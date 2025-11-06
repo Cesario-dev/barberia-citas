@@ -1,10 +1,25 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Contable</title>
+    <style>
+        body { font-family: Arial, sans-serif; background:#f2f2f2; margin:30px; }
+        table { border-collapse: collapse; width:100%; background:white; }
+        th, td { padding:8px 10px; border:1px solid #ccc; text-align:center; }
+        th { background:#222; color:white; }
+        tr:nth-child(even) { background:#fafafa; }
+        h2, h3 { text-align:center; color:#333; }
+        button { background:#444; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; }
+        button:hover { background:#666; }
+    </style>
+</head>
+<body>
 
 <h2>📊 Panel contable semanal ({{ inicio_semana }} → {{ fin_semana }})</h2>
 
-<table border="1" cellspacing="0" cellpadding="6">
-    <thead style="background:#444; color:white;">
+<table>
+    <thead>
         <tr>
             <th>Barbero</th>
             <th>%</th>
@@ -50,4 +65,5 @@
 <hr>
 <h3>💵 Ganancia total de la barbería: ${{ '%.2f'|format(total_barberia) }}</h3>
 
-{% endblock %}
+</body>
+</html>
