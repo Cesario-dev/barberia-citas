@@ -1025,6 +1025,89 @@ def contabilidad_barbero():
                            fin_semana=fin_semana.date(),
                            es_admin=es_admin)
 
+@app.route("/admin/contabilidad", methods=["GET", "POST"])
+def admin_contabilidad():
+    if 'peluquero_id' not in session or not session.get('es_admin'):
+        return redirect(url_for('login'))
+
+    conn = get_conn()
+    c = conn.cursor()
+
+    # Si el admin actualiza porcentajes
+    if request.method == "POST":
+        peluquero_id = request.form.get("peluquero_id")
+        nuevo_porcentaje = request.form.get("porcentaje")
+        try:
+            nuevo_porcentaje = float(nuevo_porcentaje)
+            assert 0 <= nuevo_porcentaje <= 1
+            c.execute("UPDATE peluqueros SET porcentaje=%s WHERE id=%s",
+                      (nuevo_porcentaje, peluquero_id))
+            conn.commit()
+        except Exception as e:
+            print(f"⚠️ Error actualizando porcentaje: {e}")
+
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    tz = ZoneInfo("America/Bogota")
+
+    hoy = datetime.now(tz)
+    inicio_semana = (hoy - timedelta(days=hoy.weekday())).replace(hour=0, minute=0, second=0)
+    fin_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
+
+    inicio_utc = inicio_semana.astimezone(ZoneInfo("UTC"))
+    fin_utc = fin_semana.astimezone(ZoneInfo("UTC"))
+
+    # Obtener todos los barberos
+    c.execute("SELECT id, nombre, porcentaje FROM peluqueros WHERE es_admin=0")
+    peluqueros = c.fetchall()
+
+    reporte = []
+    total_barberia = 0
+
+    for pid, nombre, porcentaje in peluqueros:
+        c.execute("""
+            SELECT
+                SUM(CASE WHEN tipo='venta' AND categoria='cortes' THEN monto ELSE 0 END),
+                SUM(CASE WHEN tipo='venta' AND categoria!='cortes' THEN monto ELSE 0 END),
+                SUM(CASE WHEN tipo='consumo' THEN monto ELSE 0 END),
+                SUM(CASE WHEN tipo='adelanto' THEN monto ELSE 0 END)
+            FROM movimientos_contabilidad
+            WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
+        """, (pid, inicio_utc, fin_utc))
+        totales = c.fetchone()
+
+        total_cortes = float(totales[0] or 0)
+        total_barberia_ventas = float(totales[1] or 0)
+        total_consumos = float(totales[2] or 0)
+        total_adelantos = float(totales[3] or 0)
+
+        pago_barbero = total_cortes * float(porcentaje)
+        total_neto = pago_barbero - total_consumos - total_adelantos
+        ganancia_barberia = (total_cortes * (1 - float(porcentaje))) + total_barberia_ventas
+
+        total_barberia += ganancia_barberia
+
+        reporte.append({
+            "id": pid,
+            "nombre": nombre,
+            "porcentaje": porcentaje,
+            "total_cortes": total_cortes,
+            "total_barberia_ventas": total_barberia_ventas,
+            "consumos": total_consumos,
+            "adelantos": total_adelantos,
+            "pago_barbero": pago_barbero,
+            "total_neto": total_neto,
+            "ganancia_barberia": ganancia_barberia
+        })
+
+    conn.close()
+
+    return render_template("admin_contabilidad.html",
+                           reporte=reporte,
+                           total_barberia=total_barberia,
+                           inicio_semana=inicio_semana.date(),
+                           fin_semana=fin_semana.date())
+
 @app.route("/admin/gestionar_turno_global", methods=["POST"])
 def gestionar_turno_global():
     if "peluquero_id" not in session or not session.get("es_admin"):
