@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>💈 Contabilidad de {{ nombre_peluquero }}</h2>
+<p>Semana: {{ inicio_semana }} → {{ fin_semana }}</p>
+
+<hr>
+
+<form method="POST" class="form-movimiento">
+    <h3>Registrar nuevo movimiento</h3>
+    <label>Tipo:</label>
+    <select name="tipo" required>
+        <option value="venta">Venta</option>
+        <option value="consumo">Consumo</option>
+        <option value="adelanto">Adelanto</option>
+    </select>
+
+    <label>Categoría:</label>
+    <select name="categoria" required>
+        <option value="cortes">Cortes</option>
+        <option value="barberia">Barbería</option>
+    </select>
+
+    <label>Descripción:</label>
+    <input type="text" name="descripcion" placeholder="Ej: Corte, bebida, etc.">
+
+    <label>Monto:</label>
+    <input type="number" step="0.01" name="monto" required>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<hr>
+
+<h3>📋 Movimientos registrados</h3>
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Categoría</th>
+            <th>Descripción</th>
+            <th>Monto</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for id, tipo, categoria, descripcion, monto, fecha in movimientos %}
+        <tr>
+            <td>{{ fecha.astimezone().strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ tipo }}</td>
+            <td>{{ categoria }}</td>
+            <td>{{ descripcion }}</td>
+            <td>${{ '%.2f'|format(monto) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">Sin registros esta semana.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h3>📊 Resumen semanal</h3>
+<ul>
+    <li>Total cortes: ${{ '%.2f'|format(total_cortes) }}</li>
+    <li>Total barbería: ${{ '%.2f'|format(total_barberia) }}</li>
+    <li>Consumos: -${{ '%.2f'|format(total_consumos) }}</li>
+    <li>Adelantos: -${{ '%.2f'|format(total_adelantos) }}</li>
+    <li>Porcentaje barbero: {{ (porcentaje*100)|round(0) }}%</li>
+    <li><b>Pago por cortes:</b> ${{ '%.2f'|format(pago_por_cortes) }}</li>
+    <li><b>Total neto a pagar:</b> ${{ '%.2f'|format(pago_neto) }}</li>
+</ul>
+{% endblock %}
