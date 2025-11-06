@@ -89,6 +89,13 @@
             margin-bottom: 4px; /* espacio entre hora y botón */
             display: block;
         }
+        .btn-contabilidad { 
+            background: #2b8; 
+            color:#fff; 
+            padding:8px; 
+            border-radius:8px; 
+            text-decoration:none; 
+        }
     </style>
 </head>
 <body>
@@ -97,6 +104,11 @@
 <a href="{{ url_for('admin_panel') }}" style="display:inline-block;margin-bottom:15px;padding:8px 12px;background:#007bff;color:white;text-decoration:none;border-radius:5px;">
     ⬅ Volver al panel
 </a>
+{% if es_admin %}
+  <a href="{{ url_for('contabilidad_barbero', peluquero_id=peluquero_id) }}" class="btn-contabilidad">
+    📊 Contabilidad de {{ nombre }}
+  </a>
+{% endif %}
 {% if not es_admin %}
   <a href="{{ url_for('contabilidad_barbero') }}" class="btn-contabilidad">
     💰 Ver mi contabilidad
