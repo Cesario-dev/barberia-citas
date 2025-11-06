@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📊 Panel contable semanal ({{ inicio_semana }} → {{ fin_semana }})</h2>
+
+<table border="1" cellspacing="0" cellpadding="6">
+    <thead style="background:#444; color:white;">
+        <tr>
+            <th>Barbero</th>
+            <th>%</th>
+            <th>Total Cortes</th>
+            <th>Ventas Barbería</th>
+            <th>Consumos</th>
+            <th>Adelantos</th>
+            <th>Pago por cortes</th>
+            <th>Total Neto</th>
+            <th>Ganancia Barbería</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in reporte %}
+        <tr>
+            <td>{{ b.nombre }}</td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="peluquero_id" value="{{ b.id }}">
+                    <input type="number" name="porcentaje"
+                           step="0.01" min="0" max="1"
+                           value="{{ b.porcentaje }}"
+                           style="width:60px; text-align:center;">
+                    <button type="submit" title="Guardar porcentaje">💾</button>
+                </form>
+            </td>
+            <td>${{ '%.2f'|format(b.total_cortes) }}</td>
+            <td>${{ '%.2f'|format(b.total_barberia_ventas) }}</td>
+            <td>-${{ '%.2f'|format(b.consumos) }}</td>
+            <td>-${{ '%.2f'|format(b.adelantos) }}</td>
+            <td>${{ '%.2f'|format(b.pago_barbero) }}</td>
+            <td><b>${{ '%.2f'|format(b.total_neto) }}</b></td>
+            <td>${{ '%.2f'|format(b.ganancia_barberia) }}</td>
+            <td>
+                <a href="{{ url_for('contabilidad_barbero', peluquero_id=b.id) }}">🔍 Ver detalle</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+<h3>💵 Ganancia total de la barbería: ${{ '%.2f'|format(total_barberia) }}</h3>
+
+{% endblock %}
