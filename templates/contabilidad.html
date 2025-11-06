@@ -1,72 +1,147 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>💈 Contabilidad de {{ nombre_peluquero }}</h2>
-<p>Semana: {{ inicio_semana }} → {{ fin_semana }}</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Contabilidad</title>
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background-color: #121212;
+            color: #f1f1f1;
+            margin: 0;
+            padding: 0;
+        }
 
-<hr>
+        header {
+            background: #00bcd4;
+            color: #111;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 22px;
+        }
 
-<form method="POST" class="form-movimiento">
-    <h3>Registrar nuevo movimiento</h3>
-    <label>Tipo:</label>
-    <select name="tipo" required>
-        <option value="venta">Venta</option>
-        <option value="consumo">Consumo</option>
-        <option value="adelanto">Adelanto</option>
-    </select>
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: #1f1f1f;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
 
-    <label>Categoría:</label>
-    <select name="categoria" required>
-        <option value="cortes">Cortes</option>
-        <option value="barberia">Barbería</option>
-    </select>
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: center;
+        }
 
-    <label>Descripción:</label>
-    <input type="text" name="descripcion" placeholder="Ej: Corte, bebida, etc.">
+        select, input {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: none;
+            background: #333;
+            color: #fff;
+        }
 
-    <label>Monto:</label>
-    <input type="number" step="0.01" name="monto" required>
+        button {
+            background: #00bcd4;
+            color: #111;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-    <button type="submit">Guardar</button>
-</form>
+        button:hover {
+            background: #0097a7;
+        }
 
-<hr>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #2a2a2a;
+        }
 
-<h3>📋 Movimientos registrados</h3>
-<table border="1" cellpadding="6" cellspacing="0">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Categoría</th>
-            <th>Descripción</th>
-            <th>Monto</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for id, tipo, categoria, descripcion, monto, fecha in movimientos %}
-        <tr>
-            <td>{{ fecha.astimezone().strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>{{ tipo }}</td>
-            <td>{{ categoria }}</td>
-            <td>{{ descripcion }}</td>
-            <td>${{ '%.2f'|format(monto) }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="5">Sin registros esta semana.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: center;
+        }
 
-<hr>
+        th {
+            background: #00bcd4;
+            color: #111;
+        }
 
-<h3>📊 Resumen semanal</h3>
-<ul>
-    <li>Total cortes: ${{ '%.2f'|format(total_cortes) }}</li>
-    <li>Total barbería: ${{ '%.2f'|format(total_barberia) }}</li>
-    <li>Consumos: -${{ '%.2f'|format(total_consumos) }}</li>
-    <li>Adelantos: -${{ '%.2f'|format(total_adelantos) }}</li>
-    <li>Porcentaje barbero: {{ (porcentaje*100)|round(0) }}%</li>
-    <li><b>Pago por cortes:</b> ${{ '%.2f'|format(pago_por_cortes) }}</li>
-    <li><b>Total neto a pagar:</b> ${{ '%.2f'|format(pago_neto) }}</li>
-</ul>
-{% endblock %}
+        tr:nth-child(even) {
+            background: #252525;
+        }
+
+        .totales {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .positivo { color: #00e676; }
+        .negativo { color: #ff5252; }
+    </style>
+</head>
+<body>
+
+<header>💈 Mi Contabilidad Semanal</header>
+
+<main>
+    <form method="POST">
+        <select name="tipo">
+            <option value="venta">Venta</option>
+            <option value="consumo">Consumo</option>
+        </select>
+
+        <select name="categoria">
+            <option value="cortes">Cortes</option>
+            <option value="barberia">Barbería</option>
+        </select>
+
+        <input type="text" name="descripcion" placeholder="Descripción" required>
+        <input type="number" name="valor" placeholder="Valor" required>
+        <button type="submit">💾 Registrar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registros %}
+            <tr>
+                <td>{{ reg.fecha }}</td>
+                <td>{{ reg.tipo }}</td>
+                <td>{{ reg.categoria }}</td>
+                <td>{{ reg.descripcion }}</td>
+                <td>${{ '%.2f'|format(reg.valor) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totales">
+        <p>💰 Total de ingresos: <span class="positivo">${{ '%.2f'|format(total_ingresos) }}</span></p>
+        <p>💳 Total de consumos: <span class="negativo">-${{ '%.2f'|format(total_consumos) }}</span></p>
+        <p><b>🧾 Total semanal: ${{ '%.2f'|format(total_neto) }}</b></p>
+    </div>
+</main>
+
+</body>
+</html>
