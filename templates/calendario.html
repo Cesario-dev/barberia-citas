@@ -97,6 +97,11 @@
 <a href="{{ url_for('admin_panel') }}" style="display:inline-block;margin-bottom:15px;padding:8px 12px;background:#007bff;color:white;text-decoration:none;border-radius:5px;">
     ⬅ Volver al panel
 </a>
+{% if not es_admin %}
+  <a href="{{ url_for('contabilidad_barbero') }}" class="btn-contabilidad">
+    💰 Ver mi contabilidad
+  </a>
+{% endif %}
 {% if es_admin %}
     <form action="{{ url_for('liberar_todo', peluquero_id=peluquero_id) }}" method="post">
     <button type="submit" class="btn-liberar">
@@ -104,6 +109,7 @@
     </button>
 </form>
 {% endif %}
+    
 <table>
     <thead>
         <tr>
