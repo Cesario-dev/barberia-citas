@@ -942,88 +942,67 @@ def contabilidad_barbero():
     if 'peluquero_id' not in session:
         return redirect(url_for('login'))
 
-    usuario_id = session.get('peluquero_id')
+    peluquero_id = session['peluquero_id']
     es_admin = session.get('es_admin', False)
-    peluquero_id = request.args.get('peluquero_id') if es_admin else usuario_id
 
     conn = get_conn()
     c = conn.cursor()
 
-    # Registrar un nuevo movimiento (si es POST)
+    # Si se envió un nuevo registro (venta o consumo)
     if request.method == "POST":
         tipo = request.form.get("tipo")
         categoria = request.form.get("categoria")
         descripcion = request.form.get("descripcion")
-        monto = request.form.get("monto")
-
-        try:
-            monto = float(monto)
-            assert monto >= 0
-        except:
-            conn.close()
-            return "Monto inválido", 400
+        valor = float(request.form.get("valor", 0))
 
         c.execute("""
-            INSERT INTO movimientos_contabilidad (peluquero_id, tipo, categoria, descripcion, monto, creado_por)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (peluquero_id, tipo, categoria, descripcion, monto, usuario_id))
+            INSERT INTO contabilidad (peluquero_id, tipo, categoria, descripcion, valor, fecha)
+            VALUES (%s, %s, %s, %s, %s, NOW())
+        """, (peluquero_id, tipo, categoria, descripcion, valor))
         conn.commit()
 
-    # Calcular resumen semanal
-    tz = ZoneInfo("America/Bogota")
-    hoy = datetime.now(tz)
-    inicio_semana = (hoy - timedelta(days=hoy.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
-    fin_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
-    inicio_utc = inicio_semana.astimezone(ZoneInfo("UTC"))
-    fin_utc = fin_semana.astimezone(ZoneInfo("UTC"))
+    # Rango de fechas de la semana actual (lunes a domingo)
+    from datetime import datetime, timedelta, date
+    hoy = date.today()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
+    fin_semana = inicio_semana + timedelta(days=6)       # domingo
 
+    # Obtener registros de la semana actual
     c.execute("""
-        SELECT id, tipo, categoria, descripcion, monto, fecha
-        FROM movimientos_contabilidad
-        WHERE peluquero_id = %s AND fecha BETWEEN %s AND %s
+        SELECT fecha, tipo, categoria, descripcion, valor
+        FROM contabilidad
+        WHERE peluquero_id = %s AND fecha::date BETWEEN %s AND %s
         ORDER BY fecha DESC
-    """, (peluquero_id, inicio_utc, fin_utc))
-    movimientos = c.fetchall()
+    """, (peluquero_id, inicio_semana, fin_semana))
 
-    c.execute("""
-        SELECT
-            SUM(CASE WHEN tipo='venta' AND categoria='cortes' THEN monto ELSE 0 END),
-            SUM(CASE WHEN tipo='venta' AND categoria!='cortes' THEN monto ELSE 0 END),
-            SUM(CASE WHEN tipo='consumo' THEN monto ELSE 0 END),
-            SUM(CASE WHEN tipo='adelanto' THEN monto ELSE 0 END)
-        FROM movimientos_contabilidad
-        WHERE peluquero_id = %s AND fecha BETWEEN %s AND %s
-    """, (peluquero_id, inicio_utc, fin_utc))
-    totales = c.fetchone()
+    registros = [
+        {
+            "fecha": r[0].strftime("%d/%m/%Y"),
+            "tipo": r[1],
+            "categoria": r[2],
+            "descripcion": r[3],
+            "valor": float(r[4]),
+        }
+        for r in c.fetchall()
+    ]
 
-    total_cortes = float(totales[0] or 0)
-    total_barberia = float(totales[1] or 0)
-    total_consumos = float(totales[2] or 0)
-    total_adelantos = float(totales[3] or 0)
-
-    c.execute("SELECT nombre, porcentaje FROM peluqueros WHERE id=%s", (peluquero_id,))
-    row = c.fetchone()
-    nombre_peluquero = row[0] if row else "Desconocido"
-    porcentaje = float(row[1] or 0.6)
-
-    pago_por_cortes = total_cortes * porcentaje
-    pago_neto = pago_por_cortes - total_consumos - total_adelantos
+    # Calcular totales
+    total_ingresos = sum(r["valor"] for r in registros if r["tipo"] == "venta")
+    total_consumos = sum(r["valor"] for r in registros if r["tipo"] == "consumo")
+    total_neto = total_ingresos - total_consumos
 
     conn.close()
 
-    return render_template("contabilidad.html",
-                           movimientos=movimientos,
-                           nombre_peluquero=nombre_peluquero,
-                           porcentaje=porcentaje,
-                           total_cortes=total_cortes,
-                           total_barberia=total_barberia,
-                           total_consumos=total_consumos,
-                           total_adelantos=total_adelantos,
-                           pago_por_cortes=pago_por_cortes,
-                           pago_neto=pago_neto,
-                           inicio_semana=inicio_semana.date(),
-                           fin_semana=fin_semana.date(),
-                           es_admin=es_admin)
+    return render_template(
+        "contabilidad.html",
+        registros=registros,
+        total_ingresos=total_ingresos,
+        total_consumos=total_consumos,
+        total_neto=total_neto,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
+        es_admin=es_admin
+    )
 
 @app.route("/admin/contabilidad", methods=["GET", "POST"])
 def admin_contabilidad():
