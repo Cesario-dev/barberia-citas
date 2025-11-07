@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial Contabilidad</title>
+    <style>
+        body { font-family: Arial; background: #f3f3f3; padding: 20px; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #222; color: white; }
+        tr:hover { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>📅 Historial de Contabilidad</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Semana</th>
+                <th>Barbero</th>
+                <th>Total Cortes</th>
+                <th>Total Barbería</th>
+                <th>Total Consumos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in historial %}
+            <tr>
+                <td>{{ fila[0] }} → {{ fila[1] }}</td>
+                <td>{{ fila[2] }}</td>
+                <td>${{ "%.0f"|format(fila[3]) }}</td>
+                <td>${{ "%.0f"|format(fila[4]) }}</td>
+                <td>${{ "%.0f"|format(fila[5]) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{{ url_for('admin_contabilidad') }}">⬅️ Volver</a>
+</body>
+</html>
