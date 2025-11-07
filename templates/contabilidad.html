@@ -133,7 +133,7 @@
                 <td>{{ reg.descripcion }}</td>
                 <td>${{ '%.2f'|format(reg.valor) }}</td>
                 <td>
-                    <form method="POST" action="{{ url_for('eliminar_movimiento', id=reg[0]) }}" style="display:inline;">
+                    <form method="POST" action="{{ url_for('eliminar_movimiento', id=reg['id']) }}" style="display:inline;">
                         <button type="submit" onclick="return confirm('¿Eliminar este registro?')" style="background:red;color:white;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;">🗑️</button>
                     </form>
                 </td>
