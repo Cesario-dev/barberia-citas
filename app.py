@@ -1087,6 +1087,27 @@ def admin_contabilidad():
                            inicio_semana=inicio_semana.date(),
                            fin_semana=fin_semana.date())
 
+@app.route("/admin/contabilidad_historial")
+def ver_contabilidad_historial():
+    if 'peluquero_id' not in session or not session.get('es_admin'):
+        return redirect(url_for('login'))
+
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute("""
+        SELECT semana_inicio, semana_fin, nombre_peluquero,
+               SUM(CASE WHEN tipo='venta' AND categoria='cortes' THEN valor ELSE 0 END) AS total_cortes,
+               SUM(CASE WHEN tipo='venta' AND categoria='barberia' THEN valor ELSE 0 END) AS total_barberia,
+               SUM(CASE WHEN tipo='consumo' THEN valor ELSE 0 END) AS total_consumos
+        FROM contabilidad_historial
+        GROUP BY semana_inicio, semana_fin, nombre_peluquero
+        ORDER BY semana_fin DESC
+    """)
+    historial = c.fetchall()
+    conn.close()
+
+    return render_template("admin_contabilidad_historial.html", historial=historial)
+
 @app.route("/admin/gestionar_turno_global", methods=["POST"])
 def gestionar_turno_global():
     if "peluquero_id" not in session or not session.get("es_admin"):
@@ -1137,6 +1158,49 @@ def gestionar_turno_global():
     conn.close()
 
     return redirect(url_for("admin_panel"))
+
+def cierre_automatico_semanal():
+    """
+    Cierra automáticamente la semana cada domingo a las 11:59 PM.
+    Copia los registros de 'contabilidad' a 'contabilidad_historial'
+    y luego limpia la tabla principal.
+    """
+    while True:
+        try:
+            ahora = datetime.now()
+            # Calcular próximo domingo a las 11:59 PM
+            dias_hasta_domingo = (6 - ahora.weekday()) % 7  # 0=Lunes, 6=Domingo
+            proximo_domingo = ahora + timedelta(days=dias_hasta_domingo)
+            fecha_cierre = proximo_domingo.replace(hour=23, minute=59, second=0, microsecond=0)
+
+            espera = (fecha_cierre - ahora).total_seconds()
+            print(f"🕒 Próximo cierre semanal programado para: {fecha_cierre}")
+            time.sleep(espera)
+
+            conn = get_conn()
+            c = conn.cursor()
+
+            fin_semana = datetime.now().date()
+            inicio_semana = fin_semana - timedelta(days=6)
+
+            # Copiar registros actuales
+            c.execute("""
+                INSERT INTO contabilidad_historial (peluquero_id, nombre_peluquero, tipo, categoria,
+                                                    nombre_item, valor, semana_inicio, semana_fin)
+                SELECT peluquero_id, nombre_peluquero, tipo, categoria, nombre_item, valor,
+                       %s, %s
+                FROM contabilidad
+            """, (inicio_semana, fin_semana))
+
+            # Limpiar tabla principal
+            c.execute("DELETE FROM contabilidad")
+            conn.commit()
+            conn.close()
+            print("✅ Cierre semanal automático ejecutado correctamente.")
+
+        except Exception as e:
+            print(f"❌ Error en cierre semanal: {e}")
+            time.sleep(60)  # evitar bucles en caso de error
 
 def enviar_recordatorios():
     while True:
@@ -1220,6 +1284,9 @@ def enviar_recordatorios():
 
 # Iniciar hilo en segundo plano para enviar recordatorios
 threading.Thread(target=enviar_recordatorios, daemon=True).start()
+
+# 🔁 Lanzar hilo automático de cierre semanal
+threading.Thread(target=cierre_automatico_semanal, daemon=True).start()
 
 # ---------- ARRANQUE ----------
 if __name__ == "__main__":
