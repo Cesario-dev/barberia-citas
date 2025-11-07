@@ -948,7 +948,7 @@ def contabilidad_barbero():
     conn = get_conn()
     c = conn.cursor()
 
-    # Si se envió un nuevo registro (venta o consumo)
+    # ✅ Registrar un nuevo movimiento (venta o consumo)
     if request.method == "POST":
         tipo = request.form.get("tipo")
         categoria = request.form.get("categoria")
@@ -961,15 +961,15 @@ def contabilidad_barbero():
         """, (peluquero_id, tipo, categoria, descripcion, valor))
         conn.commit()
 
-    # Rango de fechas de la semana actual (lunes a domingo)
-    from datetime import datetime, timedelta, date
+    # ✅ Calcular rango de la semana (lunes a domingo)
+    from datetime import date, timedelta
     hoy = date.today()
-    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
-    fin_semana = inicio_semana + timedelta(days=6)       # domingo
+    inicio_semana = hoy - timedelta(days=hoy.weekday())
+    fin_semana = inicio_semana + timedelta(days=6)
 
-    # Obtener registros de la semana actual
+    # ✅ Obtener movimientos de la semana
     c.execute("""
-        SELECT fecha, tipo, categoria, descripcion, valor
+        SELECT id, fecha, tipo, categoria, descripcion, valor
         FROM contabilidad
         WHERE peluquero_id = %s AND fecha::date BETWEEN %s AND %s
         ORDER BY fecha DESC
@@ -977,40 +977,34 @@ def contabilidad_barbero():
 
     registros = [
         {
-            "fecha": r[0].strftime("%d/%m/%Y"),
-            "tipo": r[1],
-            "categoria": r[2],
-            "descripcion": r[3],
-            "valor": float(r[4]),
+            "id": r[0],
+            "fecha": r[1].strftime("%d/%m/%Y"),
+            "tipo": r[2],
+            "categoria": r[3],
+            "descripcion": r[4],
+            "valor": float(r[5]),
         }
         for r in c.fetchall()
     ]
 
-    # Calcular totales
+    # ✅ Calcular totales
     total_ingresos = sum(r["valor"] for r in registros if r["tipo"] == "venta")
     total_consumos = sum(r["valor"] for r in registros if r["tipo"] == "consumo")
     total_neto = total_ingresos - total_consumos
 
     conn.close()
 
-    print("🧾 Movimientos:", movimientos)
-
-    
-
-    try:
-        return render_template(
-            "contabilidad.html",
-            registros=registros,
-            total_ingresos=total_ingresos,
-            total_consumos=total_consumos,
-            total_neto=total_neto,
-            inicio_semana=inicio_semana,
-            fin_semana=fin_semana,
-            es_admin=es_admin
-        )
-    except Exception as e:
-        print("⚠️ Error al renderizar contabilidad:", e)
-        return "Error al mostrar contabilidad — revisa logs", 500
+    # ✅ Renderizar correctamente
+    return render_template(
+        "contabilidad.html",
+        registros=registros,
+        total_ingresos=total_ingresos,
+        total_consumos=total_consumos,
+        total_neto=total_neto,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
+        es_admin=es_admin
+    )
 
 @app.route("/admin/contabilidad", methods=["GET", "POST"])
 def admin_contabilidad():
@@ -1100,20 +1094,13 @@ def eliminar_movimiento(id):
     if 'peluquero_id' not in session:
         return redirect(url_for('login'))
 
-    peluquero_id = session['peluquero_id']
-    es_admin = session.get('es_admin', False)
-
     conn = get_conn()
     c = conn.cursor()
-
-    # 🔒 Si es barbero, solo puede borrar sus propios movimientos
-    if es_admin:
-        c.execute("DELETE FROM contabilidad WHERE id = %s", (id,))
-    else:
-        c.execute("DELETE FROM contabilidad WHERE id = %s AND peluquero_id = %s", (id, peluquero_id))
-
+    c.execute("DELETE FROM contabilidad WHERE id = %s", (id,))
     conn.commit()
     conn.close()
+
+    return redirect(url_for('contabilidad_barbero'))
 
     # Redirigir a su propia contabilidad
     if es_admin:
