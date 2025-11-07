@@ -1087,6 +1087,32 @@ def admin_contabilidad():
                            inicio_semana=inicio_semana.date(),
                            fin_semana=fin_semana.date())
 
+@app.route("/contabilidad/eliminar/<int:id>", methods=["POST"])
+def eliminar_movimiento(id):
+    if 'peluquero_id' not in session:
+        return redirect(url_for('login'))
+
+    peluquero_id = session['peluquero_id']
+    es_admin = session.get('es_admin', False)
+
+    conn = get_conn()
+    c = conn.cursor()
+
+    # 🔒 Si es barbero, solo puede borrar sus propios movimientos
+    if es_admin:
+        c.execute("DELETE FROM contabilidad WHERE id = %s", (id,))
+    else:
+        c.execute("DELETE FROM contabilidad WHERE id = %s AND peluquero_id = %s", (id, peluquero_id))
+
+    conn.commit()
+    conn.close()
+
+    # Redirigir a su propia contabilidad
+    if es_admin:
+        return redirect(url_for('admin_contabilidad'))
+    else:
+        return redirect(url_for('contabilidad_barbero', peluquero_id=peluquero_id))
+
 @app.route("/admin/contabilidad_historial")
 def ver_contabilidad_historial():
     if 'peluquero_id' not in session or not session.get('es_admin'):
