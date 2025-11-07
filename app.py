@@ -993,16 +993,24 @@ def contabilidad_barbero():
 
     conn.close()
 
-    return render_template(
-        "contabilidad.html",
-        registros=registros,
-        total_ingresos=total_ingresos,
-        total_consumos=total_consumos,
-        total_neto=total_neto,
-        inicio_semana=inicio_semana,
-        fin_semana=fin_semana,
-        es_admin=es_admin
-    )
+    print("🧾 Movimientos:", movimientos)
+
+    
+
+    try:
+        return render_template(
+            "contabilidad.html",
+            registros=registros,
+            total_ingresos=total_ingresos,
+            total_consumos=total_consumos,
+            total_neto=total_neto,
+            inicio_semana=inicio_semana,
+            fin_semana=fin_semana,
+            es_admin=es_admin
+        )
+    except Exception as e:
+        print("⚠️ Error al renderizar contabilidad:", e)
+        return "Error al mostrar contabilidad — revisa logs", 500
 
 @app.route("/admin/contabilidad", methods=["GET", "POST"])
 def admin_contabilidad():
