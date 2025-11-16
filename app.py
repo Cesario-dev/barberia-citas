@@ -942,7 +942,8 @@ def contabilidad_barbero():
     if 'peluquero_id' not in session:
         return redirect(url_for('login'))
 
-    peluquero_id = session['peluquero_id']
+     # Si el admin accede con ?peluquero_id=ID, usar ese
+    peluquero_id = request.args.get("peluquero_id") or session['peluquero_id']
     es_admin = session.get('es_admin', False)
 
     conn = get_conn()
