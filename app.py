@@ -1015,57 +1015,45 @@ def admin_contabilidad():
     conn = get_conn()
     c = conn.cursor()
 
-    # Si el admin actualiza porcentajes
-    if request.method == "POST":
-        peluquero_id = request.form.get("peluquero_id")
-        nuevo_porcentaje = request.form.get("porcentaje")
-        try:
-            nuevo_porcentaje = float(nuevo_porcentaje)
-            assert 0 <= nuevo_porcentaje <= 1
-            c.execute("UPDATE peluqueros SET porcentaje=%s WHERE id=%s",
-                      (nuevo_porcentaje, peluquero_id))
-            conn.commit()
-        except Exception as e:
-            print(f"⚠️ Error actualizando porcentaje: {e}")
+    # Rangos de lunes a domingo de la semana actual
+    from datetime import date, timedelta
+    hoy = date.today()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
+    fin_semana = inicio_semana + timedelta(days=6)       # domingo
 
-    from datetime import datetime, timedelta
-    from zoneinfo import ZoneInfo
-    tz = ZoneInfo("America/Bogota")
-
-    hoy = datetime.now(tz)
-    inicio_semana = (hoy - timedelta(days=hoy.weekday())).replace(hour=0, minute=0, second=0)
-    fin_semana = inicio_semana + timedelta(days=6, hours=23, minutes=59, seconds=59)
-
-    inicio_utc = inicio_semana.astimezone(ZoneInfo("UTC"))
-    fin_utc = fin_semana.astimezone(ZoneInfo("UTC"))
-
-    # Obtener todos los barberos
-    c.execute("SELECT id, nombre, porcentaje FROM peluqueros WHERE es_admin=0")
-    peluqueros = c.fetchall()
+    # Traer todos los barberos (excluyendo admin)
+    c.execute("""
+        SELECT id, nombre, porcentaje
+        FROM peluqueros
+        WHERE es_admin = 0
+        ORDER BY nombre
+    """)
+    barberos = c.fetchall()
 
     reporte = []
     total_barberia = 0
 
-    for pid, nombre, porcentaje in peluqueros:
+    for (pid, nombre, porcentaje) in barberos:
+
+        # Obtener movimientos del barbero de esta semana
         c.execute("""
-            SELECT
-                SUM(CASE WHEN tipo='venta' AND categoria='cortes' THEN monto ELSE 0 END),
-                SUM(CASE WHEN tipo='venta' AND categoria!='cortes' THEN monto ELSE 0 END),
-                SUM(CASE WHEN tipo='consumo' THEN monto ELSE 0 END),
-                SUM(CASE WHEN tipo='adelanto' THEN monto ELSE 0 END)
-            FROM movimientos_contabilidad
-            WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
-        """, (pid, inicio_utc, fin_utc))
-        totales = c.fetchone()
+            SELECT tipo, categoria, valor
+            FROM contabilidad
+            WHERE peluquero_id = %s
+            AND fecha::date BETWEEN %s AND %s
+        """, (pid, inicio_semana, fin_semana))
 
-        total_cortes = float(totales[0] or 0)
-        total_barberia_ventas = float(totales[1] or 0)
-        total_consumos = float(totales[2] or 0)
-        total_adelantos = float(totales[3] or 0)
+        registros = c.fetchall()
 
-        pago_barbero = total_cortes * float(porcentaje)
-        total_neto = pago_barbero - total_consumos - total_adelantos
-        ganancia_barberia = (total_cortes * (1 - float(porcentaje))) + total_barberia_ventas
+        # Cálculos
+        total_cortes = sum(v for (t, cat, v) in registros if t == 'venta' and cat == 'cortes')
+        ventas_barberia = sum(v for (t, cat, v) in registros if t == 'venta' and cat != 'cortes')
+        consumos = sum(v for (t, cat, v) in registros if t == 'consumo')
+        adelantos = sum(v for (t, cat, v) in registros if t == 'adelanto')
+
+        pago_por_cortes = total_cortes * (porcentaje / 100)
+        total_neto = pago_por_cortes - consumos - adelantos
+        ganancia_barberia = ventas_barberia + (total_cortes - pago_por_cortes)
 
         total_barberia += ganancia_barberia
 
@@ -1074,21 +1062,23 @@ def admin_contabilidad():
             "nombre": nombre,
             "porcentaje": porcentaje,
             "total_cortes": total_cortes,
-            "total_barberia_ventas": total_barberia_ventas,
-            "consumos": total_consumos,
-            "adelantos": total_adelantos,
-            "pago_barbero": pago_barbero,
+            "ventas_barberia": ventas_barberia,
+            "consumos": consumos,
+            "adelantos": adelantos,
+            "pago_por_cortes": pago_por_cortes,
             "total_neto": total_neto,
             "ganancia_barberia": ganancia_barberia
         })
 
     conn.close()
 
-    return render_template("admin_contabilidad.html",
-                           reporte=reporte,
-                           total_barberia=total_barberia,
-                           inicio_semana=inicio_semana.date(),
-                           fin_semana=fin_semana.date())
+    return render_template(
+        "admin_contabilidad.html",
+        reporte=reporte,
+        total_barberia=total_barberia,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
+    )
 
 @app.route("/contabilidad/eliminar/<int:id>", methods=["POST"])
 def eliminar_movimiento(id):
