@@ -97,6 +97,9 @@
 </header>
 <h2>{{ nombre_peluquero }}: Agenda Para Esta Semana</h2>
 
+<button onclick="setSemana(0)">Semana actual</button>
+<button onclick="setSemana(1)">Semana siguiente</button>
+
 {% if msg %}
 <div style="background:#ffefc4;padding:10px;border-radius:5px;margin-bottom:15px;">
     {{ msg }}
@@ -157,6 +160,7 @@
     <div id="modal-content">
         <h3>Agendar cita</h3>
         <form id="agendar-form" onsubmit="return false;">
+            <input type="hidden" name="semana_offset" id="semana_offset" value="0">
             <input type="hidden" name="peluquero_id" id="peluquero_id">
             <input type="hidden" name="dia" id="dia">
             <input type="hidden" name="hora" id="hora">
@@ -225,6 +229,12 @@ document.getElementById('agendar-form').addEventListener('submit', async functio
 document.getElementById('cerrar').addEventListener('click', function() {
     window.location.href = "{{ url_for('index') }}";
 });
+</script>
+<script>
+function setSemana(valor) {
+    document.getElementById("semana_offset").value = valor;
+    location.reload(); // luego lo refinamos
+}
 </script>
 
 </body>
