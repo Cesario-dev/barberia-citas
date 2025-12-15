@@ -43,6 +43,32 @@ def get_conn():
         raise Exception("❌ No se encontró la variable DATABASE_URL")
     return psycopg2.connect(database_url)
 
+def fecha_desde_dia(dia_semana, semana_offset=0):
+    """
+    dia_semana: 'lunes', 'martes', ..., 'domingo'
+    semana_offset: 0 = esta semana, 1 = próxima semana
+    """
+
+    dias = {
+        "lunes": 0,
+        "martes": 1,
+        "miercoles": 2,
+        "jueves": 3,
+        "viernes": 4,
+        "sabado": 5,
+        "domingo": 6
+    }
+
+    hoy = date.today()
+
+    # lunes de la semana actual (SIEMPRE)
+    inicio_semana = hoy - timedelta(days=hoy.weekday())
+
+    # mover a la semana deseada
+    inicio_semana += timedelta(weeks=semana_offset)
+
+    return inicio_semana + timedelta(days=dias[dia_semana])
+
 def adapt_query(query: str) -> str:
     return query.replace("?", "%s") if USE_POSTGRES else query
 
@@ -194,6 +220,12 @@ def agendar():
     nombre = request.form.get("nombre")
     telefono = request.form.get("telefono")
 
+    # ⬇️ semana_offset viene del frontend (0 o 1)
+    semana_offset = int(request.form.get("semana_offset", 0))
+    
+    # 🔹 Calcular fecha real
+    fecha_cita = fecha_desde_dia(dia, semana_offset)
+
     conn = get_conn()
     c = conn.cursor()
     c.execute("SELECT nombre FROM peluqueros WHERE id = %s", (peluquero_id,))
@@ -207,16 +239,22 @@ def agendar():
     c = conn.cursor()
 
     # Verificar que sigue disponible
-    c.execute("SELECT COUNT(*) FROM citas WHERE peluquero_id=%s AND dia=%s AND hora=%s", 
-              (peluquero_id, dia, hora))
+    c.execute("""
+        SELECT COUNT(*)
+        FROM citas
+        WHERE peluquero_id=%s AND fecha=%s AND hora=%s
+    """, (peluquero_id, fecha_cita, hora))
     if c.fetchone()[0] > 0:
         conn.close()
         return "Lo sentimos, ese horario ya fue tomado", 400
 
     # Guardar la cita
     c.execute(
-        "INSERT INTO citas (peluquero_id, dia, hora, nombre, telefono) VALUES (%s, %s, %s, %s, %s)",
-        (peluquero_id, dia, hora, nombre, telefono)
+        """
+        INSERT INTO citas (peluquero_id, dia, hora, fecha, nombre, telefono)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+        (peluquero_id, dia, hora, fecha_cita, nombre, telefono)
     )
     conn.commit()
     conn.close()
