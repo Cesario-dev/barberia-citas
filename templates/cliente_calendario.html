@@ -97,8 +97,17 @@
 </header>
 <h2>{{ nombre_peluquero }}: Agenda Para Esta Semana</h2>
 
-<button onclick="setSemana(0)">Semana actual</button>
-<button onclick="setSemana(1)">Semana siguiente</button>
+<div style="margin-bottom:10px;">
+  <a href="?semana=0"
+     style="{{ 'font-weight:bold' if semana == 0 else '' }}">
+     Semana actual
+  </a>
+  |
+  <a href="?semana=1"
+     style="{{ 'font-weight:bold' if semana == 1 else '' }}">
+     Semana siguiente
+  </a>
+</div>
 
 {% if msg %}
 <div style="background:#ffefc4;padding:10px;border-radius:5px;margin-bottom:15px;">
