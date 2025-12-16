@@ -659,6 +659,8 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
+    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
+
     # ✅ Cancelar cita (solo admin)
     cancelar_dia = request.args.get('cancelar_dia')
     cancelar_hora = request.args.get('cancelar_hora')
@@ -702,9 +704,12 @@ def ver_calendario_admin(peluquero_id):
 
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
 
 
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
@@ -745,8 +750,8 @@ def ver_calendario_admin(peluquero_id):
     c.execute("""
         SELECT id, dia, hora, nombre, telefono, fijo
         FROM citas
-        WHERE peluquero_id=%s
-    """, (peluquero_id,))
+        WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, inicio_semana, fin_semana))
     ocupados = {
         (row[1], row[2]): {
             "id": row[0],
@@ -762,6 +767,9 @@ def ver_calendario_admin(peluquero_id):
 
     return render_template(
         "calendario.html",
+        semana=semana,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
         nombre=nombre,
         peluquero_id=peluquero_id,
         dias=dias,
