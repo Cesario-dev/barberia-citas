@@ -402,6 +402,8 @@ def calendario_cliente(peluquero_id):
         for i, d in enumerate(dias)
     }
 
+    semana_offset = int(request.args.get("semana", 0))
+
     # Horas realmente existentes
     c.execute("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
@@ -447,6 +449,7 @@ def calendario_cliente(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados
+        semana_offset=semana_offset
     )
 
 @app.route("/admin")
@@ -717,6 +720,8 @@ def ver_calendario_admin(peluquero_id):
         for i, d in enumerate(dias)
     }
 
+    semana_offset = int(request.args.get("semana", 0))
+
     # 🔹 Obtener solo las horas que realmente existan en la DB (horarios o citas)
     c.execute("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
@@ -776,6 +781,7 @@ def ver_calendario_admin(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados,
+        semana_offset=semana_offset
         es_admin=True
     )
 
@@ -887,6 +893,8 @@ def ver_calendario(peluquero_id):
         for i, d in enumerate(dias)
     }
 
+    semana_offset = int(request.args.get("semana", 0))
+
     # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
@@ -940,6 +948,7 @@ def ver_calendario(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados,
+        semana_offset=semana_offset
         es_admin=session.get("es_admin", False)
     )
 
