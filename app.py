@@ -375,9 +375,15 @@ def logout():
 def calendario_cliente(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
+    semana = int(request.args.get("semana", 0))
+
+    hoy = date.today()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
+    inicio_semana += timedelta(weeks=semana)
+    fin_semana = inicio_semana + timedelta(days=6)       # domingo
 
     # Nombre del peluquero
-    c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
+    c.execute("SELECT nombre FROM peluqueros WHERE id=%s AND fecha BETWEEN %s AND %s", (peluquero_id, inicio_semana, fin_semana))
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
@@ -432,6 +438,9 @@ def calendario_cliente(peluquero_id):
 
     return render_template(
         "cliente_calendario.html",
+        semana=semana,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
         peluquero_id=peluquero_id,
         nombre_peluquero=nombre_peluquero,
         dias=dias,
@@ -775,6 +784,7 @@ def bloquear_dia_completo(peluquero_id):
 
     conn = get_conn()
     c = conn.cursor()
+    
 
     # ✅ Bloquear todas las horas disponibles de ese día (sin tocar las citas existentes)
     c.execute("""
@@ -801,6 +811,8 @@ def ver_calendario(peluquero_id):
     from datetime import datetime
     conn = get_conn()
     c = conn.cursor()
+
+    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
 
     # ✅ Cancelar cita solo si es admin
     if session.get("es_admin"):
@@ -853,9 +865,12 @@ def ver_calendario(peluquero_id):
 
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
 
 
 
@@ -889,8 +904,8 @@ def ver_calendario(peluquero_id):
     c.execute(adapt_query("""
         SELECT dia, hora, nombre, telefono
         FROM citas
-        WHERE peluquero_id=%s
-    """), (peluquero_id,))
+        WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
+    """), (peluquero_id, inicio_semana, fin_semana))
     ocupados = {
         (d, h): {"nombre": n, "telefono": t}
         for d, h, n, t in c.fetchall()
@@ -908,6 +923,9 @@ def ver_calendario(peluquero_id):
 
     return render_template(
         "calendario.html",
+        semana=semana,
+        inicio_semana=inicio_semana,
+        fin_semana=fin_semana,
         nombre=nombre,
         peluquero_id=peluquero_id,
         dias=dias,
