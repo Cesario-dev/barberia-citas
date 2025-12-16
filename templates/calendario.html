@@ -192,7 +192,7 @@
                 {% elif (dia, hora) in disponibles %}
                     <td class="disponible">
                         {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora) }}">🚫 Bloquear</a>
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_fecha=dias_con_fechas[dia], bloquear_hora=hora, semana_offset=semana_offset) }}">🚫 Bloquear</a>
                             <button type="button" class="btn-agendar"
                                 data-peluquero="{{ peluquero_id }}"
                                 data-dia="{{ dia }}"
