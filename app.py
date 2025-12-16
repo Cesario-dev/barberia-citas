@@ -673,24 +673,30 @@ def ver_calendario_admin(peluquero_id):
        # ✅ Bloquear horario (marcar como bloqueado)
     bloquear_dia = request.args.get('bloquear_dia')
     bloquear_hora = request.args.get('bloquear_hora')
+    fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+    
     if bloquear_dia and bloquear_hora:
         c.execute("""
-            UPDATE horarios
-            SET bloqueado = TRUE
-            WHERE peluquero_id=%s AND dia=%s AND hora=%s
-        """, (peluquero_id, bloquear_dia, bloquear_hora))
+            INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
+            VALUES (%s, %s, %s, %s, TRUE)
+            ON CONFLICT (peluquero_id, dia, hora, fecha)
+            DO UPDATE SET bloqueado = TRUE
+        """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
         conn.commit()
     
     # ✅ Reactivar horario (quitar el bloqueo)
     activar_dia = request.args.get("activar_dia") or request.args.get("reactivar_dia")
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
+    fecha = fecha_desde_dia(reactivar_dia, semana_offset)
     if activar_dia and activar_hora:
         c.execute("""
-            INSERT INTO horarios (peluquero_id, dia, hora, bloqueado)
-            VALUES (%s, %s, %s, FALSE)
-            ON CONFLICT (peluquero_id, dia, hora)
-            DO UPDATE SET bloqueado = FALSE;
-        """, (peluquero_id, activar_dia, activar_hora))
+            UPDATE horarios
+            SET bloqueado = FALSE
+            WHERE peluquero_id=%s
+              AND dia=%s
+              AND hora=%s
+              AND fecha=%s
+        """, (peluquero_id, reactivar_dia, reactivar_hora, fecha))
         conn.commit()
     
     # Datos del peluquero
@@ -745,7 +751,9 @@ def ver_calendario_admin(peluquero_id):
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado=TRUE
+        WHERE peluquero_id=%s
+          AND bloqueado=TRUE
+          AND (fecha = %s OR fecha IS NULL)
     """, (peluquero_id,))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
