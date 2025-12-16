@@ -124,6 +124,22 @@
 
 <button onclick="setSemana(0)">Semana actual</button>
 <button onclick="setSemana(1)">Semana siguiente</button>
+<div style="margin-bottom:10px;">
+  <a href="?semana=0"
+     style="{{ 'font-weight:bold' if semana == 0 else '' }}">
+     Semana actual
+  </a>
+  |
+  <a href="?semana=1"
+     style="{{ 'font-weight:bold' if semana == 1 else '' }}">
+     Semana siguiente
+  </a>
+</div>
+
+<p>
+  Semana del {{ inicio_semana.strftime('%d/%m/%Y') }}
+  al {{ fin_semana.strftime('%d/%m/%Y') }}
+</p>
     
 <table>
     <thead>
