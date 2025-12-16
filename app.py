@@ -661,6 +661,7 @@ def ver_calendario_admin(peluquero_id):
     c = conn.cursor()
 
     semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
+    semana_offset = int(request.args.get("semana", 0))
 
     # ✅ Cancelar cita (solo admin)
     cancelar_dia = request.args.get('cancelar_dia')
