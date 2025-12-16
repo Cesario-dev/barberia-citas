@@ -377,13 +377,8 @@ def calendario_cliente(peluquero_id):
     c = conn.cursor()
     semana = int(request.args.get("semana", 0))
 
-    hoy = date.today()
-    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes
-    inicio_semana += timedelta(weeks=semana)
-    fin_semana = inicio_semana + timedelta(days=6)       # domingo
-
     # Nombre del peluquero
-    c.execute("SELECT nombre FROM peluqueros WHERE id=%s AND fecha BETWEEN %s AND %s", (peluquero_id, inicio_semana, fin_semana))
+    c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
@@ -391,9 +386,12 @@ def calendario_cliente(peluquero_id):
 
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())).replace(
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
 
 
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
@@ -424,8 +422,8 @@ def calendario_cliente(peluquero_id):
     c.execute("""
         SELECT dia, hora, nombre
         FROM citas
-        WHERE peluquero_id=%s
-    """, (peluquero_id,))
+        WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, inicio_semana, fin_semana))
     ocupados = {(d, h): n for d, h, n in c.fetchall()}
     
     # 🔹 Bloqueados = los que están marcados como bloqueados
