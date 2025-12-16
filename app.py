@@ -448,7 +448,7 @@ def calendario_cliente(peluquero_id):
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
-        bloqueados=bloqueados
+        bloqueados=bloqueados,
         semana_offset=semana_offset
     )
 
@@ -781,7 +781,7 @@ def ver_calendario_admin(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados,
-        semana_offset=semana_offset
+        semana_offset=semana_offset,
         es_admin=True
     )
 
@@ -948,7 +948,7 @@ def ver_calendario(peluquero_id):
         disponibles=disponibles,
         ocupados=ocupados,
         bloqueados=bloqueados,
-        semana_offset=semana_offset
+        semana_offset=semana_offset,
         es_admin=session.get("es_admin", False)
     )
 
