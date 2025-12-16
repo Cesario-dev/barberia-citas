@@ -190,6 +190,12 @@ function validarFormulario() {
     return true;
 }
 
+function setSemana(valor) {
+    document.getElementById("semana_offset").value = valor;
+    location.reload(); // luego lo refinamos
+}
+
+
 document.querySelectorAll('.btn-agendar').forEach(btn => {
     btn.addEventListener('click', function() {
         document.getElementById('peluquero_id').value = this.dataset.peluquero;
