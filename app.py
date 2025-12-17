@@ -660,6 +660,13 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
+    
     fecha_inicio = inicio_semana.date()
     fecha_fin = fecha_inicio + timedelta(days=6)
 
@@ -844,6 +851,16 @@ def ver_calendario(peluquero_id):
     from datetime import datetime
     conn = get_conn()
     c = conn.cursor()
+
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
+    
+    fecha_inicio = inicio_semana.date()
+    fecha_fin = fecha_inicio + timedelta(days=6)
 
     semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
 
