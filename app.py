@@ -752,13 +752,16 @@ def ver_calendario_admin(peluquero_id):
     disponibles = {(d, h) for d, h in c.fetchall()}
 
     # Horarios bloqueados
+    fecha_inicio = inicio_semana.date()
+    fecha_fin = fecha_inicio + timedelta(days=6)
+    
     c.execute("""
         SELECT dia, hora
         FROM horarios
         WHERE peluquero_id=%s
           AND bloqueado=TRUE
-          AND (fecha = %s OR fecha IS NULL)
-    """, (peluquero_id, fecha))
+          AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, fecha_inicio, fecha_fin))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
     # Ocupados
@@ -943,13 +946,16 @@ def ver_calendario(peluquero_id):
     }
 
     # ✅ Bloqueados: solo los que están marcados como bloqueados
+    fecha_inicio = inicio_semana.date()
+    fecha_fin = fecha_inicio + timedelta(days=6)
+    
     c.execute(adapt_query("""
         SELECT dia, hora
         FROM horarios
         WHERE peluquero_id=%s
           AND bloqueado=TRUE
-          AND (fecha = %s OR fecha IS NULL)
-    """), (peluquero_id, fecha))
+          AND fecha BETWEEN %s AND %s
+    """), (peluquero_id, fechainicio, fecha_fin))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
     conn.close()
