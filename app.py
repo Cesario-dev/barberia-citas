@@ -674,9 +674,10 @@ def ver_calendario_admin(peluquero_id):
        # ✅ Bloquear horario (marcar como bloqueado)
     bloquear_dia = request.args.get('bloquear_dia')
     bloquear_hora = request.args.get('bloquear_hora')
-    fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+    
     
     if bloquear_dia and bloquear_hora:
+        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
             VALUES (%s, %s, %s, %s, TRUE)
@@ -688,8 +689,9 @@ def ver_calendario_admin(peluquero_id):
     # ✅ Reactivar horario (quitar el bloqueo)
     activar_dia = request.args.get("activar_dia") or request.args.get("reactivar_dia")
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
-    fecha = fecha_desde_dia(reactivar_dia, semana_offset)
+    
     if activar_dia and activar_hora:
+        fecha = fecha_desde_dia(reactivar_dia, semana_offset)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -853,8 +855,9 @@ def ver_calendario(peluquero_id):
     if session.get("es_admin"):
         bloquear_dia = request.args.get("bloquear_dia")
         bloquear_hora = request.args.get("bloquear_hora")
-        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+        
         if bloquear_dia and bloquear_hora:
+            fecha = fecha_desde_dia(bloquear_dia, semana_offset)
             c.execute("""
                 INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
                 VALUES (%s, %s, %s, %s, TRUE)
@@ -865,8 +868,9 @@ def ver_calendario(peluquero_id):
 
         reactivar_dia = request.args.get('reactivar_dia')
         reactivar_hora = request.args.get('reactivar_hora')
-        fecha = fecha_desde_dia(reactivar_dia, semana_offset)
+        
         if reactivar_dia and reactivar_hora:
+            fecha = fecha_desde_dia(reactivar_dia, semana_offset)
             c.execute("""
                 UPDATE horarios
                 SET bloqueado = FALSE
