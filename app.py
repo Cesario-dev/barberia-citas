@@ -660,6 +660,9 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
+    fecha_inicio = inicio_semana.date()
+    fecha_fin = fecha_inicio + timedelta(days=6)
+
     semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
     semana_offset = int(request.args.get("semana", 0))
 
@@ -809,6 +812,8 @@ def bloquear_dia_completo(peluquero_id):
 
     conn = get_conn()
     c = conn.cursor()
+    fecha_inicio = inicio_semana.date()
+    fecha_fin = fecha_inicio + timedelta(days=6)
     
 
     # ✅ Bloquear todas las horas disponibles de ese día (sin tocar las citas existentes)
