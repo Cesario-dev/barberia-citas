@@ -845,6 +845,18 @@ def ver_calendario(peluquero_id):
     if "peluquero_id" not in session:
         return redirect(url_for("login"))
 
+    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
+    semana_offset = int(request.args.get("semana", 0))
+    
+    ahora = datetime.now(tz)
+    
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
+    inicio_semana = inicio_semana.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    
+    fin_semana = inicio_semana + timedelta(days=6)
+    
     fecha_inicio = inicio_semana.date()
     fecha_fin = fecha_inicio + timedelta(days=6)
 
@@ -965,14 +977,14 @@ def ver_calendario(peluquero_id):
 
     # ✅ Ocupados
     c.execute(adapt_query("""
-        SELECT dia, hora, fecha, nombre, telefono
+        SELECT id, dia, hora, fecha, nombre, telefono, fijo
         FROM citas
         WHERE peluquero_id=%s
         AND fecha BETWEEN %s AND %s
     """), (peluquero_id, inicio_semana, fin_semana))
     ocupados = {
         (d, h): {"nombre": n, "telefono": t}
-        for d, h, f, n, t in c.fetchall()
+        for id, d, h, f, n, t, f in c.fetchall()
     }
 
     # ✅ Bloqueados: solo los que están marcados como bloqueados
