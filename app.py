@@ -772,7 +772,7 @@ def ver_calendario_admin(peluquero_id):
     fecha_fin = fecha_inicio + timedelta(days=6)
     
     c.execute("""
-        SELECT dia, hora
+        SELECT dia, hora,fecha
         FROM horarios
         WHERE peluquero_id = %s
           AND bloqueado = TRUE
