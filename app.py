@@ -730,6 +730,7 @@ def ver_calendario_admin(peluquero_id):
     }
 
     semana_offset = int(request.args.get("semana", 0))
+    fecha = inicio_semana.date()
 
     # 🔹 Obtener solo las horas que realmente existan en la DB (horarios o citas)
     c.execute("""
@@ -757,7 +758,7 @@ def ver_calendario_admin(peluquero_id):
         WHERE peluquero_id=%s
           AND bloqueado=TRUE
           AND (fecha = %s OR fecha IS NULL)
-    """, (peluquero_id,))
+    """, (peluquero_id, fecha))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
     # Ocupados
@@ -909,6 +910,7 @@ def ver_calendario(peluquero_id):
     }
 
     semana_offset = int(request.args.get("semana", 0))
+    fecha = inicio_semana.date()
 
     # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
@@ -947,7 +949,7 @@ def ver_calendario(peluquero_id):
         WHERE peluquero_id=%s
           AND bloqueado=TRUE
           AND (fecha = %s OR fecha IS NULL)
-    """), (peluquero_id,))
+    """), (peluquero_id, fecha))
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
     conn.close()
