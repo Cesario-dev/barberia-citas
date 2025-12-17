@@ -185,7 +185,7 @@
                             Disponible
                         {% endif %}
                     </td>
-                {% if (dia, hora) in ocupados %}
+                {% elif (dia, hora) in ocupados %}
                     <td class="ocupado">
                         <strong>{{ ocupados[(dia, hora)]['nombre'] }}</strong><br>
                             {% if es_admin %}
