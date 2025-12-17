@@ -782,14 +782,14 @@ def ver_calendario_admin(peluquero_id):
 
     # Ocupados
     c.execute("""
-        SELECT id, dia, hora, fecha, nombre, telefono, fijo
+        SELECT dia, hora, fecha, nombre, telefono, fijo
         FROM citas
         WHERE peluquero_id=%s
         AND fecha BETWEEN %s AND %s
     """, (peluquero_id, inicio_semana, fin_semana))
     ocupados = {
         (d, h): {"nombre": n, "telefono": t}
-        for d, h, f, n, t in c.fetchall()
+        for d, h, f, n, t, f in c.fetchall()
     }
 
     conn.close()
