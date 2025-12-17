@@ -789,7 +789,7 @@ def ver_calendario_admin(peluquero_id):
     """, (peluquero_id, inicio_semana, fin_semana))
     ocupados = {
         (d, h): {"nombre": n, "telefono": t}
-        for cita_id, d, h, f, n, t, f in c.fetchall()
+        for id, d, h, f, n, t, f in c.fetchall()
     }
 
     conn.close()
