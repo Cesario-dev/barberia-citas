@@ -162,6 +162,11 @@
         <tr>
             <td>{{ hora }}</td>
             {% for dia in dias %}
+                <small style="color:red">
+                    {{ dia }} {{ hora }}
+                    {% if (dia, hora) in bloqueados %} [BLOQUEADO]{% endif %}
+                    {% if (dia, hora) in ocupados %} [OCUPADO]{% endif %}
+                </small>
                 {% if (dia, hora) in ocupados %}
                     <td class="ocupado">
                         <strong>{{ ocupados[(dia, hora)]['nombre'] }}</strong><br>
