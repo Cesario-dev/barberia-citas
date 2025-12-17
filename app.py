@@ -660,6 +660,11 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
+    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
+    semana_offset = int(request.args.get("semana", 0))
+    
+    ahora = datetime.now(tz)
+    
     inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
     inicio_semana = inicio_semana.replace(
         hour=0, minute=0, second=0, microsecond=0
@@ -670,8 +675,7 @@ def ver_calendario_admin(peluquero_id):
     fecha_inicio = inicio_semana.date()
     fecha_fin = fecha_inicio + timedelta(days=6)
 
-    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
-    semana_offset = int(request.args.get("semana", 0))
+    
 
     # ✅ Cancelar cita (solo admin)
     cancelar_dia = request.args.get('cancelar_dia')
