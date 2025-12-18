@@ -691,7 +691,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-    fecha = fecha_desde_dia(activar_dia, inicio_semana)
+        fecha = fecha_desde_dia(activar_dia, inicio_semana)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
