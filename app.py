@@ -761,10 +761,14 @@ def ver_calendario_admin(peluquero_id):
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s
-        AND bloqueado=FALSE
-        AND fecha BETWEEN %s AND %s
-    """, (peluquero_id,fecha_inicio,fecha_fin))
+        WHERE peluquero_id = %s
+          AND bloqueado = FALSE
+          AND (
+                fecha IS NULL
+                OR fecha BETWEEN %s AND %s
+              )
+    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    
     disponibles = {(d, h) for d, h in c.fetchall()}
 
     # Horarios bloqueados
@@ -971,13 +975,17 @@ def ver_calendario(peluquero_id):
     )
 
     # ✅ Disponibles: solo los NO bloqueados
-    c.execute(adapt_query("""
+    c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s
-        AND bloqueado=FALSE
-        AND fecha BETWEEN %s AND %s
-    """), (peluquero_id, fecha_inicio, fecha_fin))
+        WHERE peluquero_id = %s
+          AND bloqueado = FALSE
+          AND (
+                fecha IS NULL
+                OR fecha BETWEEN %s AND %s
+              )
+    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    
     disponibles = {(d, h) for d, h in c.fetchall()}
 
     # ✅ Ocupados
