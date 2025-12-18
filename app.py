@@ -43,23 +43,24 @@ def get_conn():
         raise Exception("❌ No se encontró la variable DATABASE_URL")
     return psycopg2.connect(database_url)
 
-def inicio_semana_con_offset(semana_offset):
-    hoy = date.today()
-    inicio = hoy - timedelta(days=hoy.weekday())  # lunes semana actual
-    return inicio + timedelta(weeks=semana_offset)
+def inicio_semana_con_offset(semana_offset: int):
+    hoy = datetime.now().date()
+    inicio = hoy - timedelta(days=hoy.weekday())
+    return inicio + timedelta(weeks=int(semana_offset))
 
-def fecha_desde_dia(dia, inicio_semana):
+def fecha_desde_dia(dia, semana_offset):
+    inicio_semana = inicio_semana_con_offset(semana_offset)
+
     dias = {
         "lunes": 0,
         "martes": 1,
         "miercoles": 2,
-        "miércoles": 2,
         "jueves": 3,
         "viernes": 4,
         "sabado": 5,
-        "sábado": 5,
         "domingo": 6
     }
+
     return inicio_semana + timedelta(days=dias[dia])
 
 def adapt_query(query: str) -> str:
@@ -674,7 +675,7 @@ def ver_calendario_admin(peluquero_id):
     
     
     if bloquear_dia and bloquear_hora:
-        fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
+        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
             VALUES (%s, %s, %s, %s, TRUE)
@@ -682,6 +683,7 @@ def ver_calendario_admin(peluquero_id):
             DO UPDATE SET bloqueado = TRUE
         """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
         conn.commit()
+        print("DEBUG:", bloquear_dia, bloquear_hora, "fecha:", fecha,"bloquear")
         return redirect(url_for(
             'ver_calendario_admin',
             peluquero_id=peluquero_id,
@@ -693,7 +695,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-        fecha = fecha_desde_dia(activar_dia, inicio_semana)
+        fecha = fecha_desde_dia(activar_dia, semana_offset)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -703,6 +705,7 @@ def ver_calendario_admin(peluquero_id):
               AND fecha=%s
         """, (peluquero_id, activar_dia, activar_hora, fecha))
         conn.commit()
+        print("DEBUG:", activar_dia, avtivar_hora, "fecha:", fecha, "activar")
         return redirect(url_for(
             'ver_calendario_admin',
             peluquero_id=peluquero_id,
@@ -884,7 +887,7 @@ def ver_calendario(peluquero_id):
         bloquear_hora = request.args.get("bloquear_hora")
         
         if bloquear_dia and bloquear_hora:
-            fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
+            fecha = fecha_desde_dia(bloquear_dia, semana_offset)
             c.execute("""
                 INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
                 VALUES (%s, %s, %s, %s, TRUE)
@@ -892,6 +895,7 @@ def ver_calendario(peluquero_id):
                 DO UPDATE SET bloqueado = TRUE
             """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
             conn.commit()
+            print("DEBUG:", bloquear_dia, bloquear_hora, "fecha:", fecha,"bloquear")
             return redirect(url_for(
                 'ver_calendario_admin',
                 peluquero_id=peluquero_id,
@@ -903,7 +907,7 @@ def ver_calendario(peluquero_id):
         activar_hora = request.args.get('reactivar_hora')
         
         if activar_dia and activar_hora:
-            fecha = fecha_desde_dia(activar_dia, inicio_semana)
+            fecha = fecha_desde_dia(activar_dia, semana_offset)
             c.execute("""
                 UPDATE horarios
                 SET bloqueado = FALSE
@@ -913,6 +917,7 @@ def ver_calendario(peluquero_id):
                   AND fecha=%s
             """, (peluquero_id, activar_dia, activar_hora, fecha))
             conn.commit()
+            print("DEBUG:", activar_dia, activar_hora, "fecha:", fecha,"activar")
             return redirect(url_for(
                 'ver_calendario_admin',
                 peluquero_id=peluquero_id,
