@@ -682,6 +682,11 @@ def ver_calendario_admin(peluquero_id):
             DO UPDATE SET bloqueado = TRUE
         """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
         conn.commit()
+             return redirect(url_for(
+            'ver_calendario_admin',
+            peluquero_id=peluquero_id,
+            semana_offset=semana_offset
+        ))
     
     # ✅ Reactivar horario (quitar el bloqueo)
     activar_dia = request.args.get("activar_dia") or request.args.get("reactivar_dia")
@@ -698,6 +703,11 @@ def ver_calendario_admin(peluquero_id):
               AND fecha=%s
         """, (peluquero_id, activar_dia, activar_hora, fecha))
         conn.commit()
+            return redirect(url_for(
+            'ver_calendario_admin',
+            peluquero_id=peluquero_id,
+            semana_offset=semana_offset
+        ))
     
     # Datos del peluquero
     c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
@@ -882,6 +892,7 @@ def ver_calendario(peluquero_id):
                 DO UPDATE SET bloqueado = TRUE
             """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
             conn.commit()
+            
 
         activar_dia = request.args.get('reactivar_dia')
         activar_hora = request.args.get('reactivar_hora')
@@ -897,6 +908,11 @@ def ver_calendario(peluquero_id):
                   AND fecha=%s
             """, (peluquero_id, activar_dia, activar_hora, fecha))
             conn.commit()
+            return redirect(url_for(
+                'ver_calendario_admin',
+                peluquero_id=peluquero_id,
+                semana_offset=semana_offset
+            ))
 
     # ✅ Obtener nombre del peluquero
     c.execute(adapt_query("SELECT nombre FROM peluqueros WHERE id=%s"), (peluquero_id,))
