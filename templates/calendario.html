@@ -162,58 +162,67 @@
         <tr>
             <td>{{ hora }}</td>
             {% for dia in dias %}
-                {% if (dia, hora) in bloqueados %}
+                {% if (dia, hora) in ocupados %}
+                    <td class="ocupado">
+                        <strong>{{ ocupados[(dia, hora)]['nombre'] }}</strong><br>
+                
+                        {% if es_admin %}
+                            📞 <a href="https://wa.me/57{{ ocupados[(dia, hora)]['telefono'] }}"
+                                  target="_blank"
+                                  style="color:#25D366;text-decoration:none;">
+                                {{ ocupados[(dia, hora)]['telefono'] }}
+                            </a>
+                
+                            <form action="{{ url_for('toggle_fijo', cita_id=ocupados[(dia, hora)]['id']) }}"
+                                  method="post"
+                                  style="display:inline;">
+                                <button type="submit">
+                                    {% if ocupados[(dia, hora)]['fijo'] %}
+                                        Desactivar
+                                    {% else %}
+                                        Fijar cita
+                                    {% endif %}
+                                </button>
+                            </form>
+                
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, cancelar_dia=dia, cancelar_hora=hora, semana_offset=semana_offset) }}">
+                                Cancelar
+                            </a>
+                        {% endif %}
+                    </td>
+                
+                {% elif (dia, hora) in bloqueados %}
                     <td class="bloqueado">
                         {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, reactivar_dia=dia, reactivar_hora=hora, semana_offset=semana_offset) }}">➕ Reactivar</a>
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, reactivar_dia=dia, reactivar_hora=hora, semana_offset=semana_offset) }}">
+                                ➕ Reactivar
+                            </a>
                         {% else %}
                             Bloqueado
                         {% endif %}
                     </td>
+                
                 {% elif (dia, hora) in disponibles %}
                     <td class="disponible">
                         {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora, semana_offset=semana_offset) }}">🚫 Bloquear</a>
-                            <button type="button" class="btn-agendar"
-                                data-peluquero="{{ peluquero_id }}"
-                                data-dia="{{ dia }}"
-                                data-hora="{{ hora }}"
-                                data-semana="{{ semana_offset }}">
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora, semana_offset=semana_offset) }}">
+                                🚫 Bloquear
+                            </a>
+                            <button type="button"
+                                    class="btn-agendar"
+                                    data-peluquero="{{ peluquero_id }}"
+                                    data-dia="{{ dia }}"
+                                    data-hora="{{ hora }}"
+                                    data-semana="{{ semana_offset }}">
                                 Agendar
                             </button>
                         {% else %}
                             Disponible
                         {% endif %}
                     </td>
-                {% elif (dia, hora) in ocupados %}
-                    <td class="ocupado">
-                        <strong>{{ ocupados[(dia, hora)]['nombre'] }}</strong><br>
-                            {% if es_admin %}
-                            📞 <a href="https://wa.me/57{{ ocupados[(dia, hora)]['telefono'] }}"
-                                  target="_blank"
-                                  style="color: #25D366; text-decoration: none;">
-                                  {{ ocupados[(dia, hora)]['telefono'] }}
-                                </a>
-                            {% endif %}
-                            {% if es_admin %}
-                                <form action="{{ url_for('toggle_fijo', cita_id=ocupados[(dia, hora)]['id']) }}"
-                                      method="post"
-                                      style="display:inline;">
-                                    <button type="submit" class="btn-fijar">
-                                        {% if ocupados[(dia, hora)]['fijo'] %}
-                                            Desactivar
-                                        {% else %}
-                                            Fijar cita
-                                        {% endif %}
-                                    </button>
-                                </form>
-                            {% endif %}
-                        {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, cancelar_dia=dia, cancelar_hora=hora) }}" class="btn-cancelar">Cancelar</a>
-                        {% endif %}
-                    </td>
+                
                 {% else %}
-                    <td class="bloqueado">No disponible</td>
+                    <td>No disponible</td>
                 {% endif %}
             {% endfor %}
         </tr>
