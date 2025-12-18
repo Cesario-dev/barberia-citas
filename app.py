@@ -653,19 +653,10 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    semana_offset = int(request.args.get("semana", 0))
+    semana_offset = int(request.args.get("semana_offset", 0))
     
-    ahora = datetime.now(tz)
-    
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
+    inicio_semana = inicio_semana_con_offset(semana_offset)
     fin_semana = inicio_semana + timedelta(days=6)
-    
-    fecha_inicio = inicio_semana.date()
-    fecha_fin = fecha_inicio + timedelta(days=6)
 
     
 
@@ -802,7 +793,6 @@ def ver_calendario_admin(peluquero_id):
 
     return render_template(
         "calendario.html",
-        semana=semana_offset,
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         nombre=nombre,
@@ -850,20 +840,10 @@ def ver_calendario(peluquero_id):
     if "peluquero_id" not in session:
         return redirect(url_for("login"))
 
-    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
-    semana_offset = int(request.args.get("semana", 0))
+    semana_offset = int(request.args.get("semana_offset", 0))
     
-    ahora = datetime.now(tz)
-    
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
+    inicio_semana = inicio_semana_con_offset(semana_offset)
     fin_semana = inicio_semana + timedelta(days=6)
-    
-    fecha_inicio = inicio_semana.date()
-    fecha_fin = fecha_inicio + timedelta(days=6)
 
     # Permitir que admin vea cualquier calendario
     if not session.get("es_admin") and session["peluquero_id"] != peluquero_id:
@@ -1011,7 +991,6 @@ def ver_calendario(peluquero_id):
 
     return render_template(
         "calendario.html",
-        semana=semana_offset,
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         nombre=nombre,
