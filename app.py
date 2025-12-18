@@ -705,7 +705,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-        fecha = fecha_desde_dia(reactivar_dia, semana_offset)
+        fecha = fecha_desde_dia(activar_dia, semana_offset)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -713,7 +713,7 @@ def ver_calendario_admin(peluquero_id):
               AND dia=%s
               AND hora=%s
               AND fecha=%s
-        """, (peluquero_id, reactivar_dia, reactivar_hora, fecha))
+        """, (peluquero_id, activar_dia, activar_hora, fecha))
         conn.commit()
     
     # Datos del peluquero
@@ -776,13 +776,17 @@ def ver_calendario_admin(peluquero_id):
     fecha_fin = fecha_inicio + timedelta(days=6)
     
     c.execute("""
-        SELECT dia, hora,fecha
+        SELECT dia, hora
         FROM horarios
         WHERE peluquero_id = %s
           AND bloqueado = TRUE
-          AND fecha BETWEEN %s AND %s
-    """, (peluquero_id, fecha_inicio, fecha_fin))
-    bloqueados = {(d, h) for d, h, f in c.fetchall()}
+          AND (
+                fecha = '2000-01-01'
+                OR fecha BETWEEN %s AND %s
+              )
+    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    
+    bloqueados = {(d, h) for d, h in c.fetchall()}
 
     # Ocupados
     c.execute("""
@@ -1012,11 +1016,15 @@ def ver_calendario(peluquero_id):
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s
-        AND bloqueado=TRUE
-        AND fecha BETWEEN %s AND %s
-    """, (peluquero_id, fecha_inicio, fecha_fin))
-    bloqueados = {(d, h) for d, h, f in c.fetchall()}
+        WHERE peluquero_id = %s
+          AND bloqueado = TRUE
+          AND (
+                fecha = '2000-01-01'
+                OR fecha BETWEEN %s AND %s
+              )
+    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    
+    bloqueados = {(d, h) for d, h in c.fetchall()}
 
     conn.close()
 
