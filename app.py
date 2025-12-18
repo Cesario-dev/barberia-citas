@@ -683,7 +683,7 @@ def ver_calendario_admin(peluquero_id):
     
     
     if bloquear_dia and bloquear_hora:
-        fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
+        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
             VALUES (%s, %s, %s, %s, TRUE)
@@ -697,7 +697,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-        fecha = fecha_desde_dia(activar_dia, inicio_semana)
+        fecha = fecha_desde_dia(activar_dia, semana_offset)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -894,7 +894,7 @@ def ver_calendario(peluquero_id):
         bloquear_hora = request.args.get("bloquear_hora")
         
         if bloquear_dia and bloquear_hora:
-            fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
+            fecha = fecha_desde_dia(bloquear_dia, semana_offset)
             c.execute("""
                 INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
                 VALUES (%s, %s, %s, %s, TRUE)
@@ -907,7 +907,7 @@ def ver_calendario(peluquero_id):
         activar_hora = request.args.get('reactivar_hora')
         
         if activar_dia and activar_hora:
-            fecha = fecha_desde_dia(activar_dia, inicio_semana)
+            fecha = fecha_desde_dia(activar_dia, semana_offset)
             c.execute("""
                 UPDATE horarios
                 SET bloqueado = FALSE
