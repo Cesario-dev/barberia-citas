@@ -48,19 +48,19 @@ def inicio_semana_con_offset(semana_offset):
     inicio = hoy - timedelta(days=hoy.weekday())  # lunes semana actual
     return inicio + timedelta(weeks=semana_offset)
 
-def fecha_desde_dia(dia_semana, semana_offset):
+def fecha_desde_dia(dia, inicio_semana):
     dias = {
         "lunes": 0,
         "martes": 1,
         "miercoles": 2,
+        "miércoles": 2,
         "jueves": 3,
         "viernes": 4,
         "sabado": 5,
+        "sábado": 5,
         "domingo": 6
     }
-
-    inicio = inicio_semana_con_offset(semana_offset)
-    return inicio + timedelta(days=dias[dia_semana])
+    return inicio_semana + timedelta(days=dias[dia])
 
 def adapt_query(query: str) -> str:
     return query.replace("?", "%s") if USE_POSTGRES else query
@@ -674,7 +674,7 @@ def ver_calendario_admin(peluquero_id):
     
     
     if bloquear_dia and bloquear_hora:
-        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+        fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
             VALUES (%s, %s, %s, %s, TRUE)
@@ -688,7 +688,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-        fecha = fecha_desde_dia(activar_dia, semana_offset)
+        fecha = fecha_desde_dia(activar_dia, inicio_semana)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -874,7 +874,7 @@ def ver_calendario(peluquero_id):
         bloquear_hora = request.args.get("bloquear_hora")
         
         if bloquear_dia and bloquear_hora:
-            fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+            fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
             c.execute("""
                 INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
                 VALUES (%s, %s, %s, %s, TRUE)
@@ -887,7 +887,7 @@ def ver_calendario(peluquero_id):
         activar_hora = request.args.get('reactivar_hora')
         
         if activar_dia and activar_hora:
-            fecha = fecha_desde_dia(activar_dia, semana_offset)
+            fecha = fecha_desde_dia(activar_dia, inicio_semana)
             c.execute("""
                 UPDATE horarios
                 SET bloqueado = FALSE
