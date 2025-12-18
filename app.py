@@ -43,7 +43,12 @@ def get_conn():
         raise Exception("❌ No se encontró la variable DATABASE_URL")
     return psycopg2.connect(database_url)
 
-def fecha_desde_dia(dia_semana, inicio_semana):
+def inicio_semana_con_offset(semana_offset):
+    hoy = date.today()
+    inicio = hoy - timedelta(days=hoy.weekday())  # lunes semana actual
+    return inicio + timedelta(weeks=semana_offset)
+
+def fecha_desde_dia(dia_semana, semana_offset):
     dias = {
         "lunes": 0,
         "martes": 1,
@@ -53,7 +58,9 @@ def fecha_desde_dia(dia_semana, inicio_semana):
         "sabado": 5,
         "domingo": 6
     }
-    return inicio_semana.date() + timedelta(days=dias[dia_semana])
+
+    inicio = inicio_semana_con_offset(semana_offset)
+    return inicio + timedelta(days=dias[dia_semana])
 
 def adapt_query(query: str) -> str:
     return query.replace("?", "%s") if USE_POSTGRES else query
@@ -646,7 +653,6 @@ def ver_calendario_admin(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
     semana_offset = int(request.args.get("semana", 0))
     
     ahora = datetime.now(tz)
