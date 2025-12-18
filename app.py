@@ -43,12 +43,7 @@ def get_conn():
         raise Exception("❌ No se encontró la variable DATABASE_URL")
     return psycopg2.connect(database_url)
 
-def fecha_desde_dia(dia_semana, semana_offset=0):
-    """
-    dia_semana: 'lunes', 'martes', ..., 'domingo'
-    semana_offset: 0 = esta semana, 1 = próxima semana
-    """
-
+def fecha_desde_dia(dia_semana, inicio_semana):
     dias = {
         "lunes": 0,
         "martes": 1,
@@ -58,16 +53,7 @@ def fecha_desde_dia(dia_semana, semana_offset=0):
         "sabado": 5,
         "domingo": 6
     }
-
-    hoy = date.today()
-
-    # lunes de la semana actual (SIEMPRE)
-    inicio_semana = hoy - timedelta(days=hoy.weekday())
-
-    # mover a la semana deseada
-    inicio_semana += timedelta(weeks=semana_offset)
-
-    return inicio_semana + timedelta(days=dias[dia_semana])
+    return inicio_semana.date() + timedelta(days=dias[dia_semana])
 
 def adapt_query(query: str) -> str:
     return query.replace("?", "%s") if USE_POSTGRES else query
@@ -691,7 +677,7 @@ def ver_calendario_admin(peluquero_id):
     
     
     if bloquear_dia and bloquear_hora:
-        fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+        fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
         c.execute("""
             INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
             VALUES (%s, %s, %s, %s, TRUE)
@@ -705,7 +691,7 @@ def ver_calendario_admin(peluquero_id):
     activar_hora = request.args.get("activar_hora") or request.args.get("reactivar_hora")
     
     if activar_dia and activar_hora:
-        fecha = fecha_desde_dia(activar_dia, semana_offset)
+    fecha = fecha_desde_dia(activar_dia, inicio_semana)
         c.execute("""
             UPDATE horarios
             SET bloqueado = FALSE
@@ -881,17 +867,6 @@ def ver_calendario(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
 
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
-    fin_semana = inicio_semana + timedelta(days=6)
-    
-    fecha_inicio = inicio_semana.date()
-    fecha_fin = fecha_inicio + timedelta(days=6)
-
-    semana = int(request.args.get("semana", 0))  # 0 = actual, 1 = siguiente
 
     # ✅ Cancelar cita solo si es admin
     if session.get("es_admin"):
@@ -913,7 +888,7 @@ def ver_calendario(peluquero_id):
         bloquear_hora = request.args.get("bloquear_hora")
         
         if bloquear_dia and bloquear_hora:
-            fecha = fecha_desde_dia(bloquear_dia, semana_offset)
+            fecha = fecha_desde_dia(bloquear_dia, inicio_semana)
             c.execute("""
                 INSERT INTO horarios (peluquero_id, dia, hora, fecha, bloqueado)
                 VALUES (%s, %s, %s, %s, TRUE)
@@ -922,11 +897,11 @@ def ver_calendario(peluquero_id):
             """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
             conn.commit()
 
-        reactivar_dia = request.args.get('reactivar_dia')
-        reactivar_hora = request.args.get('reactivar_hora')
+        activar_dia = request.args.get('reactivar_dia')
+        activar_hora = request.args.get('reactivar_hora')
         
-        if reactivar_dia and reactivar_hora:
-            fecha = fecha_desde_dia(reactivar_dia, semana_offset)
+        if activar_dia and activar_hora:
+            fecha = fecha_desde_dia(activar_dia, inicio_semana)
             c.execute("""
                 UPDATE horarios
                 SET bloqueado = FALSE
@@ -934,7 +909,7 @@ def ver_calendario(peluquero_id):
                   AND dia=%s
                   AND hora=%s
                   AND fecha=%s
-            """, (peluquero_id, reactivar_dia, reactivar_hora, fecha))
+            """, (peluquero_id, activar_dia, activar_hora, fecha))
             conn.commit()
 
     # ✅ Obtener nombre del peluquero
