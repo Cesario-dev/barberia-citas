@@ -782,14 +782,19 @@ def ver_calendario_admin(peluquero_id):
 
     # Ocupados
     c.execute("""
-        SELECT id, dia, hora, fecha, nombre, telefono, fijo
+        SELECT id, dia, hora, nombre, telefono
         FROM citas
-        WHERE peluquero_id=%s
-        AND fecha BETWEEN %s AND %s
-    """, (peluquero_id, inicio_semana, fin_semana))
+        WHERE peluquero_id = %s
+          AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, fecha_inicio, fecha_fin))
+    
     ocupados = {
-        (d, h): {"nombre": n, "telefono": t}
-        for id, d, h, f, n, t, f in c.fetchall()
+        (d, h): {
+            "id": cita_id,
+            "nombre": n,
+            "telefono": t
+        }
+        for cita_id, d, h, n, t in c.fetchall()
     }
 
     conn.close()
@@ -976,15 +981,20 @@ def ver_calendario(peluquero_id):
     disponibles = {(d, h) for d, h in c.fetchall()}
 
     # ✅ Ocupados
-    c.execute(adapt_query("""
-        SELECT id, dia, hora, fecha, nombre, telefono, fijo
+    c.execute("""
+        SELECT id, dia, hora, nombre, telefono
         FROM citas
-        WHERE peluquero_id=%s
-        AND fecha BETWEEN %s AND %s
-    """), (peluquero_id, inicio_semana, fin_semana))
+        WHERE peluquero_id = %s
+          AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, fecha_inicio, fecha_fin))
+    
     ocupados = {
-        (d, h): {"nombre": n, "telefono": t}
-        for id, d, h, f, n, t, f in c.fetchall()
+        (d, h): {
+            "id": cita_id,
+            "nombre": n,
+            "telefono": t
+        }
+        for cita_id, d, h, n, t in c.fetchall()
     }
 
     # ✅ Bloqueados: solo los que están marcados como bloqueados
