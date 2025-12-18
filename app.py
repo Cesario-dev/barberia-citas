@@ -682,7 +682,7 @@ def ver_calendario_admin(peluquero_id):
             DO UPDATE SET bloqueado = TRUE
         """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
         conn.commit()
-             return redirect(url_for(
+        return redirect(url_for(
             'ver_calendario_admin',
             peluquero_id=peluquero_id,
             semana_offset=semana_offset
@@ -703,7 +703,7 @@ def ver_calendario_admin(peluquero_id):
               AND fecha=%s
         """, (peluquero_id, activar_dia, activar_hora, fecha))
         conn.commit()
-            return redirect(url_for(
+        return redirect(url_for(
             'ver_calendario_admin',
             peluquero_id=peluquero_id,
             semana_offset=semana_offset
@@ -892,7 +892,12 @@ def ver_calendario(peluquero_id):
                 DO UPDATE SET bloqueado = TRUE
             """, (peluquero_id, bloquear_dia, bloquear_hora, fecha))
             conn.commit()
-            
+            return redirect(url_for(
+                'ver_calendario_admin',
+                peluquero_id=peluquero_id,
+                semana_offset=semana_offset
+            ))
+                    
 
         activar_dia = request.args.get('reactivar_dia')
         activar_hora = request.args.get('reactivar_hora')
