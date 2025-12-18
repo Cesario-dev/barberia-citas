@@ -379,7 +379,7 @@ def calendario_cliente(peluquero_id):
 
     # inicio de la semana: lunes de la semana actual (independiente del día actual)
     # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana=offset)
+    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
     inicio_semana = inicio_semana.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
