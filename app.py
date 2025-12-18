@@ -431,7 +431,7 @@ def calendario_cliente(peluquero_id):
 
     return render_template(
         "cliente_calendario.html",
-        semana=semana,
+        semana=semana_offset,
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         peluquero_id=peluquero_id,
@@ -802,7 +802,7 @@ def ver_calendario_admin(peluquero_id):
 
     return render_template(
         "calendario.html",
-        semana=semana,
+        semana=semana_offset,
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         nombre=nombre,
@@ -1011,7 +1011,7 @@ def ver_calendario(peluquero_id):
 
     return render_template(
         "calendario.html",
-        semana=semana,
+        semana=semana_offset,
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         nombre=nombre,
