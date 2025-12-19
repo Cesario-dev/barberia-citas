@@ -743,7 +743,7 @@ def ver_calendario_admin(peluquero_id):
                 fecha IS NULL
                 OR fecha BETWEEN %s AND %s
               )
-    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    """, (peluquero_id, inicio_semana, fin_semana))
     
     disponibles = {(d, h) for d, h in c.fetchall()}
 
@@ -760,7 +760,7 @@ def ver_calendario_admin(peluquero_id):
                 fecha = '2000-01-01'
                 OR fecha BETWEEN %s AND %s
               )
-    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    """, (peluquero_id, inicio_semana, fin_semana))
     
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
@@ -933,7 +933,7 @@ def ver_calendario(peluquero_id):
                 fecha IS NULL
                 OR fecha BETWEEN %s AND %s
               )
-    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    """, (peluquero_id, inicio_semana, fin_semana))
     
     disponibles = {(d, h) for d, h in c.fetchall()}
 
