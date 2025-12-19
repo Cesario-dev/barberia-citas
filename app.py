@@ -389,8 +389,6 @@ def calendario_cliente(peluquero_id):
         for i, d in enumerate(dias)
     }
 
-    semana_offset = int(request.args.get("semana", 0))
-
     # Horas realmente existentes
     c.execute("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
