@@ -205,7 +205,7 @@
                 {% elif (dia, hora) in disponibles %}
                     <td class="disponible">
                         {% if es_admin %}
-                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora, semana_offset=semana_offset) }}">
+                            <a href="{{ url_for('ver_calendario_admin', peluquero_id=peluquero_id, bloquear_dia=dia, bloquear_hora=hora, semana_offset={{ semana_offset}}) }}">
                                 🚫 Bloquear
                             </a>
                             <button type="button"
@@ -213,7 +213,7 @@
                                     data-peluquero="{{ peluquero_id }}"
                                     data-dia="{{ dia }}"
                                     data-hora="{{ hora }}"
-                                    data-semana="{{ semana_offset }}">
+                                    data-semana_offset="{{ semana_offset }}">
                                 Agendar
                             </button>
                         {% else %}
@@ -235,7 +235,7 @@
     <div id="modal-content">
         <h3>Agendar cita</h3>
         <form id="agendar-form" onsubmit="return false;">
-            <input type="hidden" name="semana_offset" id="semana_offset">
+            <input type="hidden" name="semana_offset" value="{{ semana_offset }}">
             <input type="hidden" name="peluquero_id" id="peluquero_id">
             <input type="hidden" name="dia" id="dia">
             <input type="hidden" name="hora" id="hora">
