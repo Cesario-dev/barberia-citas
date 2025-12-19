@@ -798,7 +798,7 @@ def ver_calendario_admin(peluquero_id):
         nombre=nombre,
         peluquero_id=peluquero_id,
         dias_con_fechas=dias_con_fechas,
-        dias=dias
+        dias=dias,
         horas=horas,
         disponibles=disponibles,
         ocupados=ocupados,
@@ -992,8 +992,8 @@ def ver_calendario(peluquero_id):
         inicio_semana=inicio_semana,
         fin_semana=fin_semana,
         nombre=nombre,
-        dias=dias
-        dias_con_fechas=dias_con_fechas
+        dias=dias,
+        dias_con_fechas=dias_con_fechas,
         peluquero_id=peluquero_id,
         horas=horas,
         disponibles=disponibles,
