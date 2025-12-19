@@ -727,6 +727,7 @@ def ver_calendario_admin(peluquero_id):
     dias_con_fechas = {
         d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
         for i, d in enumerate(dias)
+    }
 
     # 🔹 Obtener solo las horas que realmente existan en la DB (horarios o citas)
     c.execute("""
@@ -923,6 +924,7 @@ def ver_calendario(peluquero_id):
     dias_con_fechas = {
         d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
         for i, d in enumerate(dias)
+    }
 
     # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
