@@ -135,21 +135,22 @@
                         <div class="hora-label">{{ hora }}</div>
                         Ocupado
                     </td>
-                {% elif (dia, hora) in disponibles %}
-                    <td class="disponible">
-                        <div class="hora-label">{{ hora }}</div>
-                        <button type="button" class="btn-agendar"
-                            data-peluquero="{{ peluquero_id }}"
-                            data-dia="{{ dia }}"
-                            data-hora="{{ hora }}"
-                            data-semana="{{ semana_offset }}">
-                            Agendar
-                        </button>
-                    </td>
                 {% elif (dia, hora) in bloqueados %}
                     <td class="ocupado">
                         <div class="hora-label">{{ hora }}</div>
                         Ocupado
+                    </td>
+                {% elif (dia, hora) in disponibles %}
+                    <td class="disponible">
+                        <div class="hora-label">{{ hora }}</div>
+                        <button type="button"
+                                class="btn-agendar"
+                                data-peluquero="{{ peluquero_id }}"
+                                data-dia="{{ dia }}"
+                                data-hora="{{ hora }}"
+                                data-semana_offset="{{ semana_offset }}">
+                            Agendar
+                        </button>
                     </td>
                 {% else %}
                     <td class="ocupado">
