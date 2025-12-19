@@ -369,23 +369,11 @@ def logout():
 def calendario_cliente(peluquero_id):
     conn = get_conn()
     c = conn.cursor()
-    semana = int(request.args.get("semana", 0))
 
     # Nombre del peluquero
     c.execute("SELECT nombre FROM peluqueros WHERE id=%s", (peluquero_id,))
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
-
-    ahora = datetime.now(tz)
-
-    # inicio de la semana: lunes de la semana actual (independiente del día actual)
-    # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
-    fin_semana = inicio_semana + timedelta(days=6)
 
 
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
@@ -402,33 +390,62 @@ def calendario_cliente(peluquero_id):
     c.execute("""
         SELECT DISTINCT hora FROM horarios WHERE peluquero_id=%s
         UNION
-        SELECT DISTINCT hora FROM citas WHERE peluquero_id=%s
+        SELECT DISTINCT hora FROM citas    WHERE peluquero_id=%s
     """, (peluquero_id, peluquero_id))
-    horas = sorted({h for (h,) in c.fetchall()}, key=lambda h: datetime.strptime(h, "%I:%M %p"))
-    
-    # Disponibles = solo los NO bloqueados
+    horas = sorted(
+        {row[0] for row in c.fetchall()},
+        key=lambda h: datetime.strptime(h, "%I:%M %p")
+    )
+
+    # Solo horarios NO bloqueados
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado = FALSE
-    """, (peluquero_id,))
-    disponibles = {(d, h) for d, h in c.fetchall()}
-    
-    # Ocupados (citas)
-    c.execute("""
-        SELECT dia, hora, nombre
-        FROM citas
-        WHERE peluquero_id=%s AND fecha BETWEEN %s AND %s
+        WHERE peluquero_id = %s
+          AND bloqueado = FALSE
+          AND (
+                fecha IS NULL
+                OR fecha BETWEEN %s AND %s
+              )
     """, (peluquero_id, inicio_semana, fin_semana))
-    ocupados = {(d, h): n for d, h, n in c.fetchall()}
     
-    # 🔹 Bloqueados = los que están marcados como bloqueados
+    disponibles = {(d, h) for d, h in c.fetchall()}
+
+    # Horarios bloqueados
+    fecha_inicio = inicio_semana
+    fecha_fin = fecha_inicio + timedelta(days=6)
+    
     c.execute("""
         SELECT dia, hora
         FROM horarios
-        WHERE peluquero_id=%s AND bloqueado = TRUE
-    """, (peluquero_id,))
+        WHERE peluquero_id = %s
+          AND bloqueado = TRUE
+          AND (
+                fecha = '2000-01-01'
+                OR fecha BETWEEN %s AND %s
+              )
+    """, (peluquero_id, inicio_semana, fin_semana))
+    
     bloqueados = {(d, h) for d, h in c.fetchall()}
+
+    # Ocupados
+    c.execute("""
+        SELECT id, dia, hora, nombre, telefono
+        FROM citas
+        WHERE peluquero_id = %s
+          AND fecha BETWEEN %s AND %s
+    """, (peluquero_id, fecha_inicio, fecha_fin))
+    
+    ocupados = {
+        (d, h): {
+            "id": cita_id,
+            "nombre": n,
+            "telefono": t
+        }
+        for cita_id, d, h, n, t in c.fetchall()
+    }
+
+    conn.close()
 
     return render_template(
         "cliente_calendario.html",
