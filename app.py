@@ -705,7 +705,7 @@ def ver_calendario_admin(peluquero_id):
               AND fecha=%s
         """, (peluquero_id, activar_dia, activar_hora, fecha))
         conn.commit()
-        print("DEBUG:", activar_dia, avtivar_hora, "fecha:", fecha, "activar")
+        print("DEBUG:", activar_dia, activar_hora, "fecha:", fecha, "activar")
         return redirect(url_for(
             'ver_calendario_admin',
             peluquero_id=peluquero_id,
@@ -748,7 +748,7 @@ def ver_calendario_admin(peluquero_id):
     disponibles = {(d, h) for d, h in c.fetchall()}
 
     # Horarios bloqueados
-    fecha_inicio = inicio_semana.date()
+    fecha_inicio = inicio_semana
     fecha_fin = fecha_inicio + timedelta(days=6)
     
     c.execute("""
@@ -955,7 +955,7 @@ def ver_calendario(peluquero_id):
     }
 
     # ✅ Bloqueados: solo los que están marcados como bloqueados
-    fecha_inicio = inicio_semana.date()
+    fecha_inicio = inicio_semana
     fecha_fin = fecha_inicio + timedelta(days=6)
     
     c.execute("""
@@ -967,7 +967,7 @@ def ver_calendario(peluquero_id):
                 fecha = '2000-01-01'
                 OR fecha BETWEEN %s AND %s
               )
-    """, (peluquero_id, inicio_semana.date(), fin_semana.date()))
+    """, (peluquero_id, inicio_semana, fin_semana))
     
     bloqueados = {(d, h) for d, h in c.fetchall()}
 
