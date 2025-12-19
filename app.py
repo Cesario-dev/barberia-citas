@@ -720,27 +720,7 @@ def ver_calendario_admin(peluquero_id):
         return "Peluquero no encontrado"
     nombre = peluquero[0]
 
-    ahora = datetime.now(tz)
 
-    # inicio de la semana: lunes de la semana actual (independiente del día actual)
-    # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
-    fin_semana = inicio_semana + timedelta(days=6)
-
-
-    dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
-
-    dias_con_fechas = {
-        d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
-        for i, d in enumerate(dias)
-    }
-
-    semana_offset = int(request.args.get("semana", 0))
-    fecha = inicio_semana.date()
 
     # 🔹 Obtener solo las horas que realmente existan en la DB (horarios o citas)
     c.execute("""
@@ -931,28 +911,6 @@ def ver_calendario(peluquero_id):
         conn.close()
         return "Peluquero no encontrado"
     nombre = row[0]
-    ahora = datetime.now(tz)
-
-    # inicio de la semana: lunes de la semana actual (independiente del día actual)
-    # .weekday(): 0 = lunes ... 6 = domingo
-    inicio_semana = (ahora - timedelta(days=ahora.weekday())) + timedelta(weeks=semana_offset)
-    inicio_semana = inicio_semana.replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    
-    fin_semana = inicio_semana + timedelta(days=6)
-
-
-
-    dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
-
-    dias_con_fechas = {
-        d: (inicio_semana + timedelta(days=i)).strftime("%d %b %Y")  # "27", "28", etc.
-        for i, d in enumerate(dias)
-    }
-
-    semana_offset = int(request.args.get("semana", 0))
-    fecha = inicio_semana.date()
 
     # ✅ Horas realmente existentes (en horarios o citas)
     c.execute(adapt_query("""
