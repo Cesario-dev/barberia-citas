@@ -375,6 +375,11 @@ def calendario_cliente(peluquero_id):
     row = c.fetchone()
     nombre_peluquero = row[0] if row else "Desconocido"
 
+    semana_offset = int(request.args.get("semana_offset", 0))
+    
+    inicio_semana = inicio_semana_con_offset(semana_offset)
+    fin_semana = inicio_semana + timedelta(days=6)
+
 
     dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
 
