@@ -213,7 +213,7 @@
                                     data-peluquero="{{ peluquero_id }}"
                                     data-dia="{{ dia }}"
                                     data-hora="{{ hora }}"
-                                    data-semana_offset="semana_offset">
+                                    data-semana_offset="{{ semana_offset }}">
                                 Agendar
                             </button>
                         {% else %}
@@ -235,7 +235,7 @@
     <div id="modal-content">
         <h3>Agendar cita</h3>
         <form id="agendar-form" onsubmit="return false;">
-            <input type="hidden" name="semana_offset" value="semana_offset">
+            <input type="hidden" name="semana_offset" value="{{ semana_offset }}">
             <input type="hidden" name="peluquero_id" id="peluquero_id">
             <input type="hidden" name="dia" id="dia">
             <input type="hidden" name="hora" id="hora">
